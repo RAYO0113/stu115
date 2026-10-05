@@ -20,25 +20,25 @@
         {
           "enc": "releases/2026-10-12/c-ywkbbb.html.enc",
           "dest": "c-ywkbbb/index.html",
-          "sha256": "14729e0241e82a367b6b0666d56a8413a80323a50b9eae8035af24a4e5846198",
+          "sha256": "9c32b47acb1ea0df36cd452e2bb507e6c62ce64b280926cdb76b4b6dd140dc99",
           "cls": "建一忠"
         },
         {
           "enc": "releases/2026-10-12/c-pnn3hs.html.enc",
           "dest": "c-pnn3hs/index.html",
-          "sha256": "046515017090fb6189eb1e4cf6ba20cc26bff90483809d45728e14cf21aab652",
+          "sha256": "7e67fe838a7cc4d77e740f45217b1d2453ece7a09d066a39cb68c2a1a680f43e",
           "cls": "建一孝"
         },
         {
           "enc": "releases/2026-10-12/c-efexia.html.enc",
           "dest": "c-efexia/index.html",
-          "sha256": "e73a05803c4040fa0d1a466596216741811e23dc303e6d58b271ac37a326efac",
+          "sha256": "5929fa3fc21d5d44348eb517da0eff143912bf4fa3bed2a32f4b9b7f0ae40d5a",
           "cls": "冷一忠"
         },
         {
           "enc": "releases/2026-10-12/c-g2jy3u.html.enc",
           "dest": "c-g2jy3u/index.html",
-          "sha256": "e6ad7ce31b3e7c44d3d05b9e9090b3ebf3cad67b6f94c6a67e57b4393a070362",
+          "sha256": "e34d03c7964f588bf0b1b8b8d1abd01bc290af9246bbd0a6247f3e69432e0c78",
           "cls": "冷一孝"
         }
       ]
