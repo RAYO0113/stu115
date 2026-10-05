@@ -1,0 +1,46 @@
+{
+  "releases": [
+    {
+      "id": "test",
+      "at": "2026-10-05T09:00:00+08:00",
+      "files": [
+        {
+          "enc": "releases/test/ok.html.enc",
+          "dest": "_release_test/index.html",
+          "sha256": "515b460e828dc8a635f3965c7517b3a99947625f2932aa0a2939f2226668d9b4",
+          "cls": "測試"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-12",
+      "at": "2026-10-12T16:30:00+08:00",
+      "files": [
+        {
+          "enc": "releases/2026-10-12/c-ywkbbb.html.enc",
+          "dest": "c-ywkbbb/index.html",
+          "sha256": "1e4a18d8326877deae7fb83c62faf74a1d1a323fc0ebcb9b99ec31283a395086",
+          "cls": "建一忠"
+        },
+        {
+          "enc": "releases/2026-10-12/c-pnn3hs.html.enc",
+          "dest": "c-pnn3hs/index.html",
+          "sha256": "ac1bb8990091dc03c82ea7ba276029e0e38a3e0cdc74836bf2c005f93187ebbb",
+          "cls": "建一孝"
+        },
+        {
+          "enc": "releases/2026-10-12/c-efexia.html.enc",
+          "dest": "c-efexia/index.html",
+          "sha256": "1441c45376b484392e13ec67e08d51ed3b3c06eb12cdffcee013a02fa4ea026c",
+          "cls": "冷一忠"
+        },
+        {
+          "enc": "releases/2026-10-12/c-g2jy3u.html.enc",
+          "dest": "c-g2jy3u/index.html",
+          "sha256": "499ac592befa05537cb57a1874184a05bd1dba2e3c01c8c183d36d51bcb7b8f4",
+          "cls": "冷一孝"
+        }
+      ]
+    }
+  ]
+}

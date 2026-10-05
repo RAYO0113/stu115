@@ -1,0 +1,31 @@
+name: 定時推送
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # 每 15 分鐘檢查一次（UTC；GitHub 可能延遲數分鐘到半小時）
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+concurrency: scheduled-release
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 解密到期版本
+        id: rel
+        env:
+          RELEASE_KEY: ${{ secrets.RELEASE_KEY }}
+        run: python3 .github/scripts/release.py
+      - name: 提交並更新網站
+        if: steps.rel.outputs.done != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "定時推送：${{ steps.rel.outputs.done }}"
+          git push
+          curl -fsS -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" || echo "（Pages 重建請求失敗，等待自動重建）"
