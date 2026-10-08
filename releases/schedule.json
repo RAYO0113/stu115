@@ -12,36 +12,6 @@
         }
       ],
       "done": "2026-10-05T04:27:21+00:00"
-    },
-    {
-      "id": "2026-10-12",
-      "at": "2026-10-12T16:30:00+08:00",
-      "files": [
-        {
-          "enc": "releases/2026-10-12/c-ywkbbb.html.enc",
-          "dest": "c-ywkbbb/index.html",
-          "sha256": "f2fe2c98c1132f5449cb3abecaa9b3894cc10d90c3ed367cba4e4f02cd2da979",
-          "cls": "建一忠"
-        },
-        {
-          "enc": "releases/2026-10-12/c-pnn3hs.html.enc",
-          "dest": "c-pnn3hs/index.html",
-          "sha256": "9904b0f4c1e8aec94f0bafc13993c28a5eac7ede5c85d92e5287d9da80dedf8a",
-          "cls": "建一孝"
-        },
-        {
-          "enc": "releases/2026-10-12/c-efexia.html.enc",
-          "dest": "c-efexia/index.html",
-          "sha256": "9a0fb0d806975c377d37aa2d6800f98e82109a0d6cef3aec648346a3f2e6fee8",
-          "cls": "冷一忠"
-        },
-        {
-          "enc": "releases/2026-10-12/c-g2jy3u.html.enc",
-          "dest": "c-g2jy3u/index.html",
-          "sha256": "d5a326720caf6e2993d6aec095d34a062378b35843c6ddc201688d00d25d6dc4",
-          "cls": "冷一孝"
-        }
-      ]
     }
   ]
 }
