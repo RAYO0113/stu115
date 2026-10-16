@@ -45,6 +45,10 @@ body{color:var(--ink)}
 .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:320px;height:52px;border-radius:26px;border:0;background:var(--brown);color:#f3dfb0;font:600 16px "Noto Sans TC",sans-serif;letter-spacing:1px;box-shadow:0 6px 18px rgba(42,29,16,.35);text-decoration:none}
 .dark .gbtn{background:#e0b04a;color:#1a1209}
 .gbtn i{font-size:22px}
+.acct{display:flex;align-items:center;width:100%;max-width:320px;height:50px;margin-bottom:12px;border-radius:25px;background:rgba(255,255,255,.75);border:1.5px solid rgba(42,29,16,.18);padding:0 18px;box-sizing:border-box}
+.dark .acct{background:rgba(255,255,255,.08);border-color:rgba(243,223,176,.25)}
+.acct input{flex:1;min-width:0;border:0;background:none;outline:none;font:600 17px "Noto Sans TC",sans-serif;color:var(--ink,inherit);letter-spacing:1px}
+.acct span{color:var(--muted);font-size:13px;white-space:nowrap}
 #login small{margin-top:14px;color:var(--muted);font-size:12.5px;text-align:center;line-height:1.6}
 #login .err{color:var(--red);font-size:14px;margin-bottom:10px;text-align:center}
 #login.out{opacity:0;visibility:hidden}
@@ -121,8 +125,9 @@ body{color:var(--ink)}
   <h1 class="serif">我要當學霸</h1>
   <p>瑞媛老師的國文教室</p>
   <div class="err" id="login-err"></div>
+  <label class="acct"><input id="acct" inputmode="text" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="學號"><span>@mail2.ccvs.kh.edu.tw</span></label>
   <a class="gbtn" id="gbtn" href="#"><i class="ti ti-brand-google"></i>用學校帳號登入</a>
-  <small>請用學校帳號（@mail2.ccvs.kh.edu.tw）登入<br>只會看到你自己的成績</small>
+  <small>打學號，按登入後只要再打密碼<br>只會看到你自己的成績</small>
 </div>
 <div id="loading"><div class="ink"><b></b><b></b><b></b><b></b></div><span>讀取中</span></div>
 
@@ -238,7 +243,20 @@ body{color:var(--ink)}
     $('login-err').textContent = msg || '';
     $('login').classList.remove('out'); $('loading').classList.add('out');
   }
-  $('gbtn').onclick = function (e) { e.preventDefault(); location.href = CFG.auth + '?page=auth&ret=' + encodeURIComponent(location.origin + location.pathname); };
+  /* 登入：先填好帳號（學號＋網域），經 Google 帳號選擇頁帶入，學生只要打密碼；沒填就照舊直接開登入頁 */
+  var AC = 'stuapp_acct_v1', DOM = '@mail2.ccvs.kh.edu.tw';
+  $('acct').value = lsGet(AC);
+  $('acct').onkeydown = function (e) { if (e.key === 'Enter') $('gbtn').click(); };
+  $('gbtn').onclick = function (e) {
+    e.preventDefault();
+    var id = $('acct').value.trim().toLowerCase().replace(/\s+/g, '');
+    if (id.indexOf('@') >= 0) id = id.split('@')[0];
+    var url = CFG.auth + '?page=auth&ret=' + encodeURIComponent(location.origin + location.pathname);
+    if (!id) { $('login-err').textContent = '請先打學號'; $('acct').focus(); return; }
+    lsSet(AC, id);
+    if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) url = 'https://accounts.google.com/AccountChooser?Email=' + encodeURIComponent(id + DOM) + '&continue=' + encodeURIComponent(url);
+    location.href = url;
+  };
   $('logout').onclick = function () { app.dialog.confirm('登出後要重新用學校帳號登入，確定嗎？', '登出', function () { lsSet(TK, ''); ssSet(PV, ''); showLogin(''); }); };
   $('darkbtn').onclick = function () { app.setDarkMode(!document.documentElement.classList.contains('dark')); };
 
