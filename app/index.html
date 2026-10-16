@@ -351,7 +351,7 @@ body{color:var(--ink)}
   }
 
   function renderMe(td) {
-    var items = D.items, scored = items.filter(function (it) { return it.final != null; });
+    var items = D.items, scored = items.filter(function (it) { return it.final != null || (it.ess === null && /^[一二三]段$/.test(it.type) && it.raw != null); });   /* 段考作文還沒登也先列出選擇分數 */
     var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; }), late = items.filter(function (it) { return it.st === 'late'; });
     $('stats').innerHTML = '<div class="stat fade"><div class="k">已登記成績</div><div class="v ok">' + scored.length + '<small> 次</small></div></div>' +
       '<div class="stat fade"><div class="k">缺交、待補</div><div class="v' + (miss.length ? '' : ' ok') + '">' + miss.length + '<small> 件</small></div></div>';
@@ -360,11 +360,12 @@ body{color:var(--ink)}
       var notes = [];
       if (it.days) notes.push('<span class="minus">遲交 ' + it.days + ' 天' + (it.pen ? ' −' + it.pen : '（不扣分）') + '</span>');
       if (it.bonus) notes.push('<span class="plus">訂正 +' + it.bonus + '</span>');
-      if (it.raw != null && (it.days || it.bonus)) notes.push('原始 ' + it.raw);
-      var w = Math.max(0, Math.min(100, it.final)), aw = it.avg == null ? null : Math.max(0, Math.min(100, it.avg));
+      if (/^[一二三]段$/.test(it.type)) notes.push('選擇 ' + it.raw + '＋作文 ' + (it.ess == null ? '待登' : it.ess));
+      else if (it.raw != null && (it.days || it.bonus)) notes.push('原始 ' + it.raw);
+      var w = Math.max(0, Math.min(100, it.final || 0)), aw = it.avg == null ? null : Math.max(0, Math.min(100, it.avg));
       return '<div class="sc"><div class="tx"><b>' + esc(it.title || tname(it.type)) + '</b><span>' + tname(it.type) + (it.due ? '・' + md(it.due).replace(/（.）/, '') : '') + (notes.length ? '　' + notes.join('　') : '') + '</span>' +
         '<div class="bar"><i style="width:' + w + '%"></i>' + (aw == null ? '' : '<em style="left:' + aw + '%"></em>') + '</div></div>' +
-        '<div class="num"><b>' + it.final + '</b><span>' + (it.avg == null ? '' : '班平均 ' + it.avg) + '</span></div></div>';
+        '<div class="num"><b>' + (it.final == null ? '—' : it.final) + '</b><span>' + (it.avg == null ? '' : '班平均 ' + it.avg) + '</span></div></div>';
     }).join('') : '<div class="empty"><i class="ti ti-notebook"></i>還沒有登記的成績</div>') + '</div>' +
       '<p class="note">紅條＝你的分數，細線＝班平均（只算有分數的同學）。以老師登記為準，有疑問請找老師。<br>學期成績和名次：老師定好配分後開放。</p>';
     var h = '';
