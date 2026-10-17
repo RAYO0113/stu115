@@ -314,6 +314,7 @@ body{color:var(--ink)}
     if (it.st === 'missing') { ic = '<div class="ic r"><i class="ti ti-alert-triangle"></i></div>'; pill = it.pen ? '<span class="pill r">逾期 ' + it.days + ' 天 −' + it.pen + '</span>' : '<span class="pill r">未交' + (it.days ? ' ' + it.days + ' 天' : '') + '</span>'; }
     else if (it.st === 'leave') { ic = '<div class="ic g"><i class="ti ti-calendar-pause"></i></div>'; pill = '<span class="pill g">' + (it.leave.k === '考' ? '待補考' : it.leave.k === '交' ? '待補交' : '請假') + '</span>'; sub = tname(it.type) + '・' + md(it.leave.d) + ' 請假' + (it.days && it.pen ? '，已扣 ' + it.pen : ''); }
     else if (it.st === 'late') { ic = '<div class="ic"><i class="ti ti-clock"></i></div>'; pill = '<span class="pill n">遲交 ' + it.days + ' 天' + (it.pen ? ' −' + it.pen : '') + '</span>'; }
+    else if (it.st === 'sub') { ic = '<div class="ic g"><i class="ti ti-circle-check"></i></div>'; pill = '<span class="pill g">已交・待登分</span>'; sub = tname(it.type) + '・' + md(it.sub) + ' 交' + (it.days ? '（遲交 ' + it.days + ' 天' + (it.pen ? ' −' + it.pen : '') + '）' : ''); }   /* 後台 gr-12：有繳交日、老師還沒登分 */
     else { ic = '<div class="ic g"><i class="ti ti-file-pencil"></i></div>'; pill = '<span class="pill g">' + rel(it.due, td) + '</span>'; }
     return '<div class="it">' + ic + '<div class="tx"><b>' + esc(it.title || tname(it.type)) + '</b><span>' + esc(sub) + '</span></div>' + pill + '</div>';
   }
@@ -352,7 +353,8 @@ body{color:var(--ink)}
 
   function renderMe(td) {
     var items = D.items, scored = items.filter(function (it) { return it.final != null || (it.ess === null && /^[一二三]段$/.test(it.type) && it.raw != null); });   /* 段考作文還沒登也先列出選擇分數 */
-    var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; }), late = items.filter(function (it) { return it.st === 'late'; });
+    var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; }), late = items.filter(function (it) { return it.st === 'late'; }),
+      wait = items.filter(function (it) { return it.st === 'sub'; });
     $('stats').innerHTML = '<div class="stat fade"><div class="k">已登記成績</div><div class="v ok">' + scored.length + '<small> 次</small></div></div>' +
       '<div class="stat fade"><div class="k">缺交、待補</div><div class="v' + (miss.length ? '' : ' ok') + '">' + miss.length + '<small> 件</small></div></div>';
     $('miss-n').textContent = miss.length ? '（' + miss.length + '）' : '';
@@ -371,6 +373,7 @@ body{color:var(--ink)}
     var h = '';
     if (miss.length) h += '<div class="sec"><h2>還沒交、待補</h2></div><div class="cd">' + miss.map(function (it) { return itemRow(it, td); }).join('') + '</div>';
     if (late.length) h += '<div class="sec"><h2>已交但遲交</h2></div><div class="cd">' + late.map(function (it) { return itemRow(it, td); }).join('') + '</div>';
+    if (wait.length) h += '<div class="sec"><h2>已交、等老師登分</h2></div><div class="cd">' + wait.map(function (it) { return itemRow(it, td); }).join('') + '</div>';
     if (!h) h = '<div class="cd"><div class="empty"><i class="ti ti-circle-check"></i>沒有缺交，也沒有遲交！</div></div>';
     $('me-miss').innerHTML = h + '<p class="note">' + (D.pen ? '逾期的作業每多一個上課日再扣 ' + D.pen + ' 分（放假、段考日不算）。' : '目前遲交不扣分，但還是要記得補交喔。') + '</p>';
   }
