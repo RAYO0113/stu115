@@ -94,6 +94,18 @@ body{color:var(--ink)}
 .days div i.dot{background:var(--gold)}.days div.off{opacity:.45}
 .empty{text-align:center;color:var(--muted);padding:18px 8px;font-size:14px}
 .empty i{display:block;font-size:34px;margin-bottom:6px;opacity:.7}
+/* 小考與訂正（10/20 從舊班級網頁搬來）：點一筆展開題目、答案、訂正規則 */
+.qzr{border-top:1px solid var(--line)}.qzr:first-child{border-top:0}
+.qzr>.it{border-top:0;cursor:pointer}.qzr .chev{flex:none;color:var(--muted);font-size:20px;transition:transform .2s}.qzr.open .chev{transform:rotate(90deg)}
+.qzr .new{display:inline-block;margin-left:6px;padding:0 7px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:500;vertical-align:2px}
+.qzd{display:none;padding:2px 0 12px}.qzr.open .qzd{display:block}
+.qzd .cr{font-size:14px;background:rgba(200,147,26,.14);border-radius:10px;padding:6px 10px;margin:0 0 8px}
+.qzd ol{margin:0;padding-left:22px}.qzd li{margin:0 0 10px;line-height:1.7}
+.qzd .s{font-family:"Noto Serif TC",serif;font-size:16px}.qzd .s mark{background:#ffe08a;color:inherit;padding:0 1px;border-radius:2px}
+.dark .qzd .s mark{background:#7a5a10;color:#fff}
+.qzd .no{margin-left:6px;font-size:12px;color:var(--muted)}
+.qzd .cpk{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;border:1px solid var(--muted);color:var(--muted);font-size:11px;vertical-align:2px}
+.qzd .an{display:block;font-size:14px;color:var(--red)}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 16px 12px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
 .stat .k{font-size:13px;color:var(--muted)}
@@ -343,12 +355,34 @@ body{color:var(--ink)}
     var quiz = (D.cal || []).filter(function (e) { return e.quiz && e.date >= td; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
     var h = '<div class="hero prac fade"><div class="hi">' + (quiz ? '下次小考　' + md(quiz.date) : '最近沒有小考') + '</div><div class="meta">' +
       (quiz ? esc((quiz.item || '') + '・範圍 ' + quiz.quiz.a + '～' + quiz.quiz.b + (quiz.quiz.nm ? '・必考 ' + quiz.quiz.nm + ' 題' : '')) : '有排小考會出現在這裡') + '</div></div>';
-    var rec = (D.quiz || []).slice().sort(function (a, b) { return a.at < b.at ? 1 : -1; }).slice(0, 6);
-    h += '<div class="sec"><h2>小考紀錄</h2></div><div class="cd fade">' + (rec.length ? rec.map(function (r) {
-      return '<div class="it"><div class="ic k"><i class="ti ti-list-check"></i></div><div class="tx"><b>' + esc(r.lesson || '注釋小考') + '</b><span>範圍 ' + esc(r.a + '～' + r.b) + '・' + r.qs.length + ' 題' + (r.code ? '・考卷編號 ' + esc(r.code) : '') + '</span></div></div>';
-    }).join('') : '<div class="empty"><i class="ti ti-list-check"></i>還沒有小考紀錄</div>') + '</div>';
+    /* 10/20：小考與訂正——全部列出（新的在上），點一筆展開題目、答案、訂正規則、要抄什麼（同舊班級網頁 stu_feed_addon） */
+    var rec = (D.quiz || []).slice().sort(function (a, b) { return a.at < b.at ? 1 : -1; });
+    h += '<div class="sec"><h2>小考與訂正</h2><span>點一下看題目和答案</span></div><div class="cd fade" id="qz-list">' + (rec.length ? rec.map(function (r, i) {
+      var d = r.at ? ymd(new Date(r.at)) : '';
+      return '<div class="qzr' + (i === 0 && d === td ? ' open' : '') + '"><div class="it" data-qz="1"><div class="ic k"><i class="ti ti-list-check"></i></div><div class="tx"><b>' +
+        (r.code ? esc(r.code) + ' ' : '') + '〈' + esc(String(r.lesson || '').split('—')[0]) + '〉註釋小考' + (d === td ? '<span class="new">今天</span>' : '') + '</b><span>' +
+        (d ? md(d) + '・' : '') + '註' + esc(r.a) + '～註' + esc(r.b) + '・' + r.qs.length + ' 題</span></div><i class="ti ti-chevron-right chev"></i></div>' +
+        '<div class="qzd">' + quizBody(r) + '</div></div>';
+    }).join('') : '<div class="empty"><i class="ti ti-list-check"></i>還沒有小考紀錄<br>老師記錄小考後，題目和答案會出現在這裡，方便訂正</div>') + '</div>';
     h += '<div class="sec"><h2>題庫練習</h2></div><div class="cd fade"><div class="empty"><i class="ti ti-target-arrow"></i>題庫準備中，之後可以在這裡一課一課練、<br>也能挑自己最弱的能力練。</div></div><div style="height:20px"></div>';
     $('prac').innerHTML = h;
+    var ql = $('qz-list');
+    if (ql) ql.onclick = function (e) { var t = e.target.closest('[data-qz]'); if (t) t.parentNode.classList.toggle('open'); };
+  }
+  function quizMark(s, w) { var i = s && w ? s.indexOf(w) : -1; return i < 0 ? esc(s || '') : esc(s.slice(0, i)) + '<mark>' + esc(w) + '</mark>' + esc(s.slice(i + w.length)); }
+  function quizBody(r) {
+    var ct = (r.corr || []).filter(function (c) { return c && c.s !== '' && c.s != null; }).map(function (c) {
+      return c.s + ' 分' + (c.op === 'le' ? '以下' : '以上') + '：訂正 ' + (c.t === '' || c.t == null ? '?' : c.t) + ' 次';
+    }).join('；');
+    /* 訂正要抄什麼：每題 cp 優先，否則整張 copy（x 考卷句／s 完整原句／w 只抄詞）；題號照考卷 ord */
+    var qs = (r.qs || []).every(function (q) { return q.ord; }) ? r.qs.slice().sort(function (x, y) { return x.ord - y.ord; }) : (r.qs || []);
+    return '<div class="cr">✏️ 訂正規則：' + (ct ? esc(ct) : '老師還沒有設定') + '</div><ol>' + qs.map(function (q) {
+      var cp = q.cp || r.copy || 'x', w = q.whole ? '' : q.w, body;
+      if (cp === 'w' && w) body = '<span class="s">' + esc(w) + '</span>';
+      else body = '<span class="s">' + quizMark(cp === 's' || !q.x ? q.s : q.x, w) + '</span>';
+      return '<li>' + body + '<span class="no">註' + esc(q.no) + '</span><span class="cpk">' + (cp === 'w' && w ? '抄詞' : cp === 's' ? '抄完整句' : '抄考卷句') + '</span>' +
+        '<span class="an"><b>' + esc(q.whole ? '整句' : q.w) + '：</b>' + esc(q.a || '（老師尚未補上答案）') + '</span></li>';
+    }).join('') + '</ol>';
   }
 
   function renderMe(td) {
