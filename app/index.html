@@ -356,7 +356,9 @@ body{color:var(--ink)}
     var h = '<div class="hero prac fade"><div class="hi">' + (quiz ? '下次小考　' + md(quiz.date) : '最近沒有小考') + '</div><div class="meta">' +
       (quiz ? esc((quiz.item || '') + '・範圍 ' + quiz.quiz.a + '～' + quiz.quiz.b + (quiz.quiz.nm ? '・必考 ' + quiz.quiz.nm + ' 題' : '')) : '有排小考會出現在這裡') + '</div></div>';
     /* 10/20：小考與訂正——全部列出（新的在上），點一筆展開題目、答案、訂正規則、要抄什麼（同舊班級網頁 stu_feed_addon） */
-    var rec = (D.quiz || []).slice().sort(function (a, b) { return a.at < b.at ? 1 : -1; });
+    /* 10/20 老師：10/18 以前的小考不列（只藏畫面，資料不動） */
+    var QZ_FROM = '2026-10-18';
+    var rec = (D.quiz || []).filter(function (r) { return r.at && ymd(new Date(r.at)) >= QZ_FROM; }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
     h += '<div class="sec"><h2>小考與訂正</h2><span>點一下看題目和答案</span></div><div class="cd fade" id="qz-list">' + (rec.length ? rec.map(function (r, i) {
       var d = r.at ? ymd(new Date(r.at)) : '';
       return '<div class="qzr' + (i === 0 && d === td ? ' open' : '') + '"><div class="it" data-qz="1"><div class="ic k"><i class="ti ti-list-check"></i></div><div class="tx"><b>' +
