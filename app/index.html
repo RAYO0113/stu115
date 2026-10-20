@@ -94,6 +94,8 @@ body{color:var(--ink)}
 .days div i.dot{background:var(--gold)}.days div.off{opacity:.45}
 .empty{text-align:center;color:var(--muted);padding:18px 8px;font-size:14px}
 .empty i{display:block;font-size:34px;margin-bottom:6px;opacity:.7}
+/* 課文（10/20 起一課一課搬來，連到 text/<課號>/） */
+.lsn>.it{border-top:0;color:inherit;text-decoration:none}.lsn .chev{flex:none;color:var(--muted);font-size:20px}
 /* 小考與訂正（10/20 從舊班級網頁搬來）：點一筆展開題目、答案、訂正規則 */
 .qzr{border-top:1px solid var(--line)}.qzr:first-child{border-top:0}
 .qzr>.it{border-top:0;cursor:pointer}.qzr .chev{flex:none;color:var(--muted);font-size:20px;transition:transform .2s}.qzr.open .chev{transform:rotate(90deg)}
@@ -170,7 +172,8 @@ body{color:var(--ink)}
         <div class="navbar navbar-large"><div class="navbar-bg"></div><div class="navbar-inner"><div class="title">課文</div><div class="title-large"><div class="title-large-text">課文</div></div></div></div>
         <div class="page-content">
           <div class="hero text fade"><div class="hi">課文筆記搬家中</div><div class="meta">筆記、習作、A卷之後會一課一課搬到這裡</div></div>
-          <div class="cd fade"><div class="empty"><i class="ti ti-truck-delivery"></i>這段時間請先用原本的班級網頁<br>（老師給你們班的連結）看筆記、習作、A卷。</div></div>
+          <div class="cd fade lsn"><a class="it external" href="text/04/"><div class="ic g"><i class="ti ti-train"></i></div><div class="tx"><b>第 5 課〈臺灣最美麗的火車線〉</b><span>課文・注釋・修辭・補充講義</span></div><i class="ti ti-chevron-right chev"></i></a></div>
+          <div class="cd fade"><div class="empty"><i class="ti ti-truck-delivery"></i>其他課請先用原本的班級網頁<br>（老師給你們班的連結）看筆記、習作、A卷。</div></div>
         </div>
       </div>
     </div>

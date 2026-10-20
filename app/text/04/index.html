@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>〈臺灣最美麗的火車線〉｜我要當學霸</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Iansui&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dist/app.css?v=5ac4b974">
+
+
+
+
+
+
+
+
+<script id="v49-ink-fix" src="dist/010_v49-ink-fix.js?v=82746aed"></script>
+
+
+
+<script id="v50-apple-pencil-priority" src="dist/012_v50-apple-pencil-priority.js?v=6b82bdb9"></script>
+
+
+<style id="stu-css">.demo-tag{font-size:.5em;margin-left:.6em;padding:2px 8px;border-radius:10px;background:#c0662a;color:#fff;vertical-align:middle}#cls-tab,#cls-panel{display:none!important}.stu-back{position:fixed;left:10px;bottom:10px;z-index:9999;padding:6px 12px;border-radius:16px;background:rgba(192,102,42,.92);color:#fff;font-size:14px;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}</style>
+</head>
+<body>
+<a class="stu-back" href="../../">← 回班級網頁</a>
+
+<div class="site-header">
+  <div>
+    <div class="site-title">我要當學霸<span class="demo-tag">學生版</span></div>
+    <div class="site-sub">〈臺灣最美麗的火車線〉課文</div>
+  </div>
+  <div class="site-controls">
+    <div class="mode-switch">
+      <button id="mode-voc" class="active" onclick="setMode('voc')">高職</button>
+      <button id="mode-sen" onclick="setMode('sen')">高中</button>
+    </div>
+    <div class="site-font-ctrl">
+      <button class="site-font-btn" onclick="wkFontDown()" title="縮小字級">A−</button>
+      <button class="site-font-btn" onclick="wkFontUp()" title="放大字級">A+</button>
+    </div>
+    <button class="site-dark-btn" id="site-dark-btn" onclick="toggleDarkMode()" title="深色模式">🌙</button>
+  </div>
+</div>
+
+<div class="site-main">
+  <section id="tab-wenxue" class="active">
+    <div class="wenxue-layout">
+      <div class="wenxue-sidebar">
+        <div id="wenxue-list" hidden></div><div id="wenxue-extra-list" hidden></div>
+        <div class="wenxue-sidebar-title">課文</div>
+        <div id="wenxue-prose-list"></div>
+        <div class="mode-hint" id="mode-hint">目前：高職版</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="wk-control-bar">
+          <select id="wk-text-select" onchange="showWenxue(this.value)"><option value="">── 選擇課文 ──</option></select>
+          <div class="wk-control-nav">
+            <button class="wk-nav-btn" onclick="wkPrev()">◀</button>
+            <span id="wk-counter" class="wk-counter-text">─</span>
+            <button class="wk-nav-btn" onclick="wkNext()">▶</button>
+          </div>
+          <button class="wk-proj-btn" onclick="wkOpenProj()">🖥 投影全螢幕</button>
+        </div>
+        <div class="wk-sections" id="wk-sections"></div>
+        <div class="wk-slide-area" id="wk-slide-area">
+          <div class="wk-welcome">
+            <div style="font-size:3rem">📖</div>
+            <div class="wk-welcome-title">部定必修古文</div>
+            <div class="wk-welcome-sub">← 點左側課文，一頁一頁投影備課</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="cls-tab" hidden></div><div id="cls-panel" hidden><div id="cls-tabs"></div><input type="date" id="cls-date" hidden><select id="cls-kind" hidden></select><input id="cls-text" hidden><div id="cls-list"></div></div>
+
+<div id="display-tab" onclick="toggleDisplayPanel()">顯示設定</div>
+<div id="display-panel" aria-label="顯示設定">
+  <div class="display-panel-head">顯示設定 <button type="button" onclick="toggleDisplayPanel()">✕</button></div>
+  <div class="display-setting">
+    <div class="display-setting-row"><span>字體大小</span><strong id="display-font-value">15 px</strong></div>
+    <input id="display-font-slider" class="display-font-slider" type="range" min="12" max="44" step="1" value="15"
+      oninput="setBaseSize(this.value)" aria-label="調整字體大小">
+    <div class="display-range"><span>小</span><span>大</span></div>
+  </div>
+  <div class="display-setting display-dark-setting">
+    <div><div class="display-dark-title">畫面亮度</div><div class="display-dark-sub">亮色／暗色</div></div>
+    <button type="button" id="display-dark-toggle" class="display-dark-btn" onclick="toggleDarkMode()">🌙 暗色</button>
+  </div>
+</div>
+
+<!-- ══ v56：通用註釋小考產生器 ══ -->
+<div id="note-quiz-tab" onclick="nqToggle()">註釋小考</div>
+
+<div id="wk-fullscreen">
+  <div class="wkfs-header">
+    <span class="wkfs-title" id="wkfs-title">古文複習</span>
+    <button class="wkfs-section-toggle" id="wkfs-section-toggle" onclick="wkToggleSections()" title="顯示／隱藏段落快速切換">☰ 段落</button>
+    <div class="wkfs-sections" id="wkfs-sections"></div>
+    <div class="wkfs-ctrl-btns">
+      <button class="wkfs-ctrl-btn" onclick="wkFontDown()" title="縮小字級">A−</button>
+      <button class="wkfs-ctrl-btn" onclick="wkFontUp()" title="放大字級">A+</button>
+      <button class="wkfs-ctrl-btn" id="wkfs-dark-btn" onclick="toggleDarkMode()" title="深色模式">🌙</button>
+    </div>
+    <button class="wkfs-close" onclick="wkCloseProj()">✕ 關閉</button>
+  </div>
+  <div class="wkfs-body" id="wkfs-body"></div>
+  <button type="button" id="wk-ink-tab" onclick="wkInkToggle()" aria-label="開啟或關閉畫記">畫記</button>
+  <button type="button" id="tp-close-blue-tab" onclick="closeAllBlueFloatingNotes()" aria-label="關閉所有藍色浮框">關閉浮框</button>
+  <div id="wk-ink-layer" aria-label="投影畫記工具">
+    <canvas id="wk-ink-canvas"></canvas>
+    <div id="wk-ink-toolbar" role="toolbar" aria-label="畫記工具">
+      <button type="button" id="wk-ink-toggle" class="wk-ink-btn" onclick="wkInkToggle()">✎ 畫記</button>
+      <div id="wk-ink-extra" class="wk-ink-extra">
+        <button type="button" class="wk-ink-btn" onclick="wkInkUndo()">↶ 撤銷</button>
+        <button type="button" class="wk-ink-btn" onclick="wkInkClear()">清除本頁</button>
+        <button type="button" class="wk-ink-color on" data-color="#c0392b" style="--ink-color:#c0392b" onclick="wkInkColor(this,'#c0392b')" aria-label="紅色"></button>
+        <button type="button" class="wk-ink-color" data-color="#1f6fb2" style="--ink-color:#1f6fb2" onclick="wkInkColor(this,'#1f6fb2')" aria-label="藍色"></button>
+        <button type="button" class="wk-ink-color" data-color="#2d7a4f" style="--ink-color:#2d7a4f" onclick="wkInkColor(this,'#2d7a4f')" aria-label="綠色"></button>
+        <button type="button" class="wk-ink-color" data-color="#7c4da0" style="--ink-color:#7c4da0" onclick="wkInkColor(this,'#7c4da0')" aria-label="紫色"></button>
+        <button type="button" class="wk-ink-color wk-ink-highlighter" data-color="rgba(255,235,59,.48)" style="--ink-color:rgba(255,235,59,.48)" onclick="wkInkHighlighter(this)" aria-label="黃色螢光筆"></button>
+        <button type="button" class="wk-ink-size on" onclick="wkInkSetSize(3)">細</button>
+        <button type="button" class="wk-ink-size" onclick="wkInkSetSize(5)">中</button>
+        <button type="button" class="wk-ink-size" onclick="wkInkSetSize(8)">粗</button>
+      </div>
+    </div>
+  </div>
+  <div class="wkfs-footer">
+    <button class="wkfs-nav" onclick="wkPrev()">←</button>
+    <span id="wkfs-counter" style="color:var(--gold);font-family:'Noto Serif TC',serif;font-size:15px">─</span>
+    <button class="wkfs-nav" onclick="wkNext()">→</button>
+  </div>
+</div>
+
+<script src="data/lessons/04.js?v=af13b0a8"></script>
+<script src="dist/015_main.js?v=7a77f00c"></script>
+<!-- 「整理版」：僅移除確定重複的 JavaScript 宣告；教材資料與既有功能保留。 -->
+
+<script src="dist/018_main.js?v=50c77432"></script>
+
+
+
+
+
+
+
+
+
+
+
+<div id="nq2" aria-label="註釋小考">
+  <div id="nq2-setup"><div class="in">
+    <div class="top">
+      <h1 class="serif">註釋小考</h1>
+      <select id="nq2-lesson" class="big" aria-label="課次"></select>
+      <button type="button" class="btn" id="nq2-dark">深色</button>
+      <button type="button" class="btn dk" id="nq2-close">✕ 回到課文</button>
+    </div>
+    <div class="bar">
+      <span class="seg" role="group" aria-label="點選模式">
+        <button type="button" id="nq2-mPick" class="on">點＝選題</button>
+        <button type="button" id="nq2-mMust">點＝必考</button>
+        <button type="button" id="nq2-mEx">點＝排除</button>
+        <button type="button" id="nq2-mVar">點＝指定小字詞</button>
+      </span>
+      <span style="flex:1"></span>
+      <span>範圍</span><input type="number" id="nq2-ra" min="1"><span>～</span><input type="number" id="nq2-rb" min="1">
+      <button type="button" class="btn" id="nq2-bRange">範圍全選</button>
+      <span>隨機</span><input type="number" id="nq2-rn" min="1" value="5"><span>題</span>
+      <button type="button" class="btn dk" id="nq2-bRand">抽！</button>
+      <button type="button" class="btn" id="nq2-bClear">清除選取</button>
+    </div>
+    <div class="hint" id="nq2-hint"></div>
+    <div class="grid" id="nq2-grid"></div>
+  </div></div>
+  <div class="dock">
+    <span id="nq2-cnt">已選 0 題</span>
+    <label><input type="checkbox" id="nq2-shuffle"> 打亂順序</label>
+    <button type="button" class="btn" id="nq2-bUnex">清除必考／排除標記</button>
+    <button type="button" class="btn dk go" id="nq2-bGo">開始小考 ▶</button>
+  </div>
+  <div id="nq2-quiz">
+    <div class="qhead">
+      <button type="button" id="nq2-bBack">◀ 選題</button>
+      <div class="t" id="nq2-qTitle"></div>
+      <button type="button" id="nq2-bSm" aria-label="字變小">A−</button>
+      <button type="button" id="nq2-bLg" aria-label="字變大">A＋</button>
+      <button type="button" id="nq2-bAll" class="gold">全部顯示答案</button>
+    </div>
+    <div id="nq2-qlist"></div>
+  </div>
+</div>
+
+<!-- ════ v64：側欄依課次排序＋白話文專屬封面（只加不刪；覆蓋 wkRenderSlideHTML 的「白話文封面」分支，其餘交回原函式） ════ -->
+<!-- ════ v65：白話文選讀加入第四課〈珍珠奶茶〉、第五課〈臺灣最美麗的火車線〉（只加不刪） ════ -->
+<!-- ════ v66：修正習作「答案總覽」空白（只加不刪） ════ -->
+<!-- ════ v68：師說習作Ａ、答案總覽預設隱藏、課文頁字詞辨析按鈕、導覽列「字詞辨析 ▾」（只加不刪） ════ -->
+<!-- ════ v69：答案顏色分流（習作綠／A卷紅／課本應用練習藍）、習作頁直接顯示答案、〈師說〉習作與 A卷 依原卷校正（只加不刪） ════ -->
+<!-- ════ v70：課本應用練習——進階練習頁（iadv）、〈師說〉進階練習（只加不刪） ════ -->
+<!-- ════ v73：修辭頁大字卡片版面＋結構動畫頁（只加不刪；不改任何課文資料） ════ -->
+<!-- ════ v74：師說習作（字詞義互動、國學常識依原卷版面、語譯綠色）、答案總覽擷取 wk-a、修辭頁字級統一（只加不刪；不改任何課文資料） ════ -->
+<!-- ════ v75：〈師說〉形音義大改——字詞辨析頁改 RAY PPT「形｜義｜例」表格＋義欄點選顯示；課文浮框「之」「者」依備課用書修正；總字卡「之」修正（只加不刪；TEXTBOOK 資料行不動，執行期覆寫） ════ -->
+<!-- ════ v76：〈師說〉浮框再修（書、教之）、補 RAY PPT 課文補充（則＝卻、第五段句意、作＝創作、拘＝限制）、總字卡字義措辭與辨析頁統一、形音義注音不換行（只加不刪；資料行不動，執行期覆寫） ════ -->
+<!-- ════ v77：〈師說〉浮框（書、授之、恥師焉的焉）＋課文加 RAY PPT 的「辨」連結（點了跳字詞辨析頁）（只加不刪；資料行不動，執行期覆寫） ════ -->
+<!-- ════ v78：〈師說〉「總」與「辨」整合——課文一律用「總」框，點開一律是「總」字卡樣式，內容取自字詞辨析頁（義點選顯示）（只加不刪；資料行不動） ════ -->
+<!-- ════ v79：〈師說〉「於」辨析簡化；「總」字卡多字形（貽／怡／飴、不齒／不恥）左欄合併儲存格（只加不刪；資料行不動） ════ -->
+<!-- ════ v80：〈師說〉修辭頁重排——錯綜（定義頁＋四類各一頁動畫）、回文（定義頁＋每例動畫）；其餘修辭導覽收成「修辭 ▾」（只加不刪；資料行不動，執行期覆寫） ════ -->
+<!-- ════ v81：〈師說〉導覽列「意動用法」也收進「◆修辭 ▾」（老師指示；只加不刪） ════ -->
+<!-- ════ v82：依課表自動記錄上課進度（即時暫存＋下課結算；只加不刪）
+     v83：改為「每台裝置自行啟用」，預設關閉（分享給其他老師時不顯示、不記錄） ════ -->
+<!-- ════ v84：課後習題／習作／A卷「考試・檢討」完成紀錄（點選即完成，不需打字；只加不刪） ════ -->
+<!-- ════ v88：① 左下角版號（全螢幕投影隱藏）② 〈師說〉錯綜／回文動畫：去掉重複的「原句」列，原句直接拆開飛成動畫 ③ 交錯語次編號改 ①②③④→①③／②④（老師 9/30 指正）（只加不刪；v80 不動，本版包 wkRenderSlideHTML 接手 v80rx 頁） ════ -->
+<script src="dist/app.js?v=33b1524b"></script>
+<script>window.addEventListener('load', function () { setTimeout(function () { if (typeof showWenxue === 'function') showWenxue("臺灣最美麗的火車線"); }, 0); });</script>
+</body>
+</html>
