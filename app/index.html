@@ -139,6 +139,10 @@ body{color:var(--ink)}
 .pkb b{font-weight:700;font-size:14.5px;position:relative}
 .pkb b em{position:absolute;top:-10px;right:-18px;min-width:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font:600 11px/18px "Noto Sans TC",sans-serif;font-style:normal}
 .pkb span{font-size:11.5px;color:var(--muted);line-height:1.4}
+.pk.pk2{grid-template-columns:repeat(2,1fr)}
+.hero .hbtn{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:7px 14px;border-radius:18px;background:rgba(255,255,255,.92);color:var(--brown);font-weight:700;font-size:14px;cursor:pointer}
+.qzbtn{display:flex;align-items:center;justify-content:center;gap:5px;margin:4px 0 2px;padding:10px;border-radius:12px;background:var(--brown);color:#f3dfb0;font-weight:700;font-size:14.5px;cursor:pointer}
+.dark .qzbtn{background:var(--gold);color:#1a1209}
 #dr{position:fixed;inset:0;z-index:7600;background:var(--paper);display:none;flex-direction:column}
 #dr.on{display:flex}
 html.dr-lock,html.dr-lock body{overflow:hidden}
@@ -454,7 +458,8 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   function renderPrac(td) {
     var quiz = (D.cal || []).filter(function (e) { return e.quiz && e.date >= td; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
     var h = '<div class="hero prac fade"><div class="hi">' + (quiz ? '下次小考　' + md(quiz.date) : '最近沒有小考') + '</div><div class="meta">' +
-      (quiz ? esc((quiz.item || '') + '・範圍 ' + quiz.quiz.a + '～' + quiz.quiz.b + (quiz.quiz.nm ? '・必考 ' + quiz.quiz.nm + ' 題' : '')) : '有排小考會出現在這裡') + '</div></div>';
+      (quiz ? esc((quiz.item || '') + '・範圍 ' + quiz.quiz.a + '～' + quiz.quiz.b + (quiz.quiz.nm ? '・必考 ' + quiz.quiz.nm + ' 題' : '')) : '有排小考會出現在這裡') + '</div>' +
+      (quiz && window.STUPRAC && (quiz.lessons || [])[0] ? '<a class="hbtn" id="qz-mem"><i class="ti ti-book"></i>先背書：註' + esc(quiz.quiz.a) + '～註' + esc(quiz.quiz.b) + '</a>' : '') + '</div>';   /* 10/21：考前先背這次範圍 */
     /* 10/20：小考與訂正——全部列出（新的在上），點一筆展開題目、答案、訂正規則、要抄什麼（同舊班級網頁 stu_feed_addon） */
     /* 10/20 老師：10/18 以前的小考不列（只藏畫面，資料不動） */
     var QZ_FROM = '2026-10-18';
@@ -464,14 +469,18 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
       return '<div class="qzr' + (i === 0 && d === td ? ' open' : '') + '"><div class="it" data-qz="1"><div class="ic k"><i class="ti ti-list-check"></i></div><div class="tx"><b>' +
         (r.code ? esc(r.code) + ' ' : '') + '〈' + esc(String(r.lesson || '').split('—')[0]) + '〉註釋小考' + (d === td ? '<span class="new">今天</span>' : '') + '</b><span>' +
         (d ? md(d) + '・' : '') + '註' + esc(r.a) + '～註' + esc(r.b) + '・' + r.qs.length + ' 題</span></div><i class="ti ti-chevron-right chev"></i></div>' +
-        '<div class="qzd">' + quizBody(r) + '</div></div>';
+        '<div class="qzd">' + quizBody(r) + (window.STUPRAC ? '<a class="qzbtn" data-qf="' + i + '"><i class="ti ti-refresh"></i>訂正重考（' + r.qs.length + ' 題）</a>' : '') + '</div></div>';   /* 10/21：考完這筆就是訂正，錯的重考到全對 */
     }).join('') : '<div class="empty"><i class="ti ti-list-check"></i>還沒有小考紀錄<br>老師記錄小考後，題目和答案會出現在這裡，方便訂正</div>') + '</div>';
     h += '<div style="height:20px"></div>';
     /* 10/20：兩個練習區（prac.js）放在小考上面 */
     $('prac').innerHTML = h.replace('<div class="sec"><h2>小考與訂正</h2>', (window.STUPRAC ? '<div id="pk-cards">' + STUPRAC.cards() + '</div>' : '') + '<div class="sec"><h2>小考與訂正</h2>');
     if (window.STUPRAC) STUPRAC.bind($('prac'));
     var ql = $('qz-list');
-    if (ql) ql.onclick = function (e) { var t = e.target.closest('[data-qz]'); if (t) t.parentNode.classList.toggle('open'); };
+    if (ql) ql.onclick = function (e) {
+      var f = e.target.closest('[data-qf]'); if (f) return STUPRAC.quizFix(rec[+f.getAttribute('data-qf')]);
+      var t = e.target.closest('[data-qz]'); if (t) t.parentNode.classList.toggle('open');
+    };
+    if ($('qz-mem')) $('qz-mem').onclick = function () { STUPRAC.memRange(quiz.lessons[0], quiz.quiz.a, quiz.quiz.b, quiz.quiz.must, quiz.item); };
   }
   function quizMark(s, w) { var i = s && w ? s.indexOf(w) : -1; return i < 0 ? esc(s || '') : esc(s.slice(0, i)) + '<mark>' + esc(w) + '</mark>' + esc(s.slice(i + w.length)); }
   function quizBody(r) {
@@ -523,6 +532,6 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   load();
 })();
 </script>
-<script src="prac.js?v=20261020"></script>
+<script src="prac.js?v=20261021"></script>
 </body>
 </html>

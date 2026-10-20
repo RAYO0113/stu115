@@ -75,15 +75,14 @@
 
   /* ── 練習頁上的兩張卡片 ── */
   function cards() {
-    var nq = openIds('q').length, nn = openIds('n').length, pv = S.me().preview;
+    var nq = openIds('q').length, pv = S.me().preview;
     return '<div class="sec"><h2>刷個題牲龍活虎</h2><span>A卷・課本後習題・習作</span></div><div class="cd fade pk">' +
       '<a class="pkb" data-pk="quick"><i class="ti ti-bolt"></i><b>快速刷題</b><span>零碎時間，10 題馬上對答案</span></a>' +
       '<a class="pkb" data-pk="speed"><i class="ti ti-stopwatch"></i><b>練點速度</b><span>仿 A 卷 ' + SPEED_N + ' 題 ' + (SPEED_SEC / 60) + ' 分鐘</span></a>' +
       '<a class="pkb" data-pk="fix"><i class="ti ti-bandage"></i><b>修復舊傷' + (nq ? '<em>' + nq + '</em>' : '') + '</b><span>' + (nq ? '錯過的 ' + nq + ' 題，連對 ' + PASS + ' 次就修好' : '目前沒有舊傷') + '</span></a></div>' +
-      '<div class="sec"><h2>考注釋牲淚俱下</h2><span>課本注釋</span></div><div class="cd fade pk">' +
+      '<div class="sec"><h2>考注釋牲淚俱下</h2><span>課本注釋</span></div><div class="cd fade pk pk2">' +
       '<a class="pkb" data-pk="nmem"><i class="ti ti-book"></i><b>背書模式</b><span>先背，點一下看解釋</span></a>' +
-      '<a class="pkb" data-pk="nquiz"><i class="ti ti-pencil-question"></i><b>刷題模式</b><span>抽考，考完自動訂正</span></a>' +
-      '<a class="pkb" data-pk="nfix"><i class="ti ti-checks"></i><b>訂正模式' + (nn ? '<em>' + nn + '</em>' : '') + '</b><span>' + (nn ? nn + ' 條還沒修好' : '目前沒有要訂正的') + '</span></a></div>' +
+      '<a class="pkb" data-pk="nquiz"><i class="ti ti-pencil-question"></i><b>刷題模式</b><span>抽考，考完自動訂正</span></a></div>' +
       (pv ? '<p class="note">老師預覽：可以試做，但練習結果不會記錄。</p>' : '<p class="note">答錯的題目會記下來（老師看得到），之後連續答對 ' + PASS + ' 次就算修好。</p>');
   }
   var host = null;
@@ -98,7 +97,6 @@
         if (k === 'quick' || k === 'speed') qSetup(k);
         else if (k === 'fix') qFix();
         else if (k === 'nmem' || k === 'nquiz') nSetup(k);
-        else if (k === 'nfix') nFixAll();
       });
     });
   }
@@ -356,17 +354,18 @@
   function inRange() { return nItems(nsel.les).filter(function (x) { return x.it.no >= nsel.a && x.it.no <= nsel.b; }); }
 
   /* 背書模式 */
-  function nMem() {
+  function nMem(must, title) {   /* must＝{'註號|詞':1} 必考（同老師日曆 quiz.must）（從「下次小考」進來時標出）；title＝那次小考名稱 */
+    must = must || {};
     var list = inRange(), mem = lsJ(MEM, {}), all = false, shown = {};
     function draw() {
       var got = list.filter(function (x) { return mem[x.les + '|' + x.i]; }).length;
-      open('背書模式', '<div class="dr-meta">' + esc(rangeLabel()) + '・記住 ' + got + ' / ' + list.length + ' 條</div>' +
+      open('背書模式', '<div class="dr-meta">' + esc((title ? title + '・' : '') + rangeLabel()) + '・記住 ' + got + ' / ' + list.length + ' 條</div>' +
         '<div class="dr-tools"><a class="dr-chip' + (all ? ' on' : '') + '" data-a="all">' + (all ? '全部遮起來' : '全部顯示') + '</a></div>' +
         list.map(function (x, k) {
           var c = nCard(x, false), it = x.it, op = all || shown[k], key = x.les + '|' + x.i;
           var ans = it.v ? it.v.map(function (v) { return '<div><b>' + esc(v[0]) + '</b>：' + v[3] + '</div>'; }).join('') : '<div><b>' + esc(it.w) + '</b>：' + it.a + '</div>';
           if (it.v) { var wh = it.v.filter(function (v) { return v[4]; })[0]; if (wh) c = { s: it.s, a: wh[1], b: wh[2] }; }
-          return '<div class="dr-card' + (mem[key] ? ' got' : '') + '"><div class="dr-no">註' + it.no + (it.v ? '<span class="dr-tag">' + it.v.length + ' 選 1</span>' : '') + '<a class="dr-got" data-a="got|' + k + '">' + (mem[key] ? '<i class="ti ti-circle-check-filled"></i> 記住了' : '<i class="ti ti-circle"></i> 記住了') + '</a></div>' +
+          return '<div class="dr-card' + (mem[key] ? ' got' : '') + '"><div class="dr-no">註' + it.no + (must[it.no + '|' + it.w] ? '<span class="dr-tag">必考</span>' : '') + (it.v ? '<span class="dr-tag">' + it.v.length + ' 選 1</span>' : '') + '<a class="dr-got" data-a="got|' + k + '">' + (mem[key] ? '<i class="ti ti-circle-check-filled"></i> 記住了' : '<i class="ti ti-circle"></i> 記住了') + '</a></div>' +
             '<div class="dr-s">' + sent(c) + '</div>' +
             (op ? '<div class="dr-ans" data-a="tog|' + k + '">' + ans + '</div>' : '<a class="dr-peek" data-a="tog|' + k + '">點一下看解釋</a>') + '</div>';
         }).join(''),
@@ -387,11 +386,6 @@
   function nQuiz() {
     var list = shuffle(inRange().slice()).slice(0, nsel.n).map(function (x) { return nCard(x, true); });
     nRun('nquiz', list, rangeLabel(), function (wrong) { if (wrong.length) nFix(wrong, rangeLabel(), true); });
-  }
-  function nFixAll() {
-    var list = openIds('n').map(cardById).filter(Boolean);
-    if (!list.length) { open('訂正模式', '<div class="empty"><i class="ti ti-heart-check"></i>目前沒有要訂正的注釋</div>', function () { close(); }, { foot: '<a class="dr-btn" data-a="home">回練習</a>' }); return; }
-    nFix(list, '待訂正注釋', false);
   }
   /* 一輪抽考：看題 → 看答案 → 自己判對錯 */
   function nRun(mode, list, les, after) {
@@ -438,7 +432,7 @@
           if (wrong.length) nFix(wrong, les, fromQuiz, round + 1);
           else open('訂正模式', '<div class="dr-big">🎉</div><p class="dr-mut c">' + (function () {
               var left = list.filter(function (c) { var e = book()[c.id]; return e && !e.f; }).length;
-              return left ? '訂正完成！其中 ' + left + ' 條之後再答對一次（連對 ' + PASS + ' 次）就會移出訂正模式。' : '訂正完成，全部修好了！';
+              return left ? '訂正完成！其中 ' + left + ' 條之後再答對一次（連對 ' + PASS + ' 次）就算修好。' : '訂正完成，全部修好了！';
             })() + '</p>', function (b) { if (b === 'again') nSetup('nquiz'); else close(); },
             { foot: '<a class="dr-btn" data-a="again">再抽一次</a><a class="dr-btn ghost" data-a="home">回練習</a>' });
         });
@@ -479,5 +473,33 @@
     var c = cardById(id); return c ? plain(c.ans).slice(0, 50) : '';
   }
 
-  window.STUPRAC = { cards: cards, bind: bind, teacher: teacher, flush: flush };
+  /* ════════ 接到真的注釋小考（10/21 老師：小考考前先背書，考完那筆小考紀錄就是訂正） ════════ */
+  function lesKey(n) { var l = (DD().les || [])[+n - 1]; return l && (DD().notes[l[0]] || []).length ? l[0] : ''; }
+  /* 「下次小考」→ 背這次範圍：n＝第幾課，a～b＝註號範圍，must＝必考註號 */
+  function memRange(n, a, b, must, title) {
+    need(function () {
+      var k = lesKey(n);
+      if (!k) { S.app.toast.create({ text: '這一課的注釋還沒放進來', closeTimeout: 3000 }).open(); return; }
+      nsel.les = k; nsel.a = +a; nsel.b = +b;
+      var m = {}; (must || []).forEach(function (x) { m[String(x)] = 1; });
+      nMem(m, title);
+    });
+  }
+  /* 小考紀錄 → 訂正重考：只考這次考卷上的題目，錯的進訂正，重考到全對 */
+  function quizFix(r) {
+    need(function () {
+      var les = String(r.lesson || '').split('—')[0], name = '〈' + les + '〉' + (r.code ? r.code + ' ' : '') + '註' + r.a + '～' + r.b;
+      var list = (r.qs || []).filter(function (q) { return q.w && q.a; }).map(function (q) {
+        var s = q.x || q.s || '', at = s.indexOf(q.w);
+        return { id: 'n:' + les + '|' + q.no + '|' + q.w, les: les, no: q.no, s: s, w: q.w, a: at, b: at < 0 ? -1 : at + q.w.length, ans: esc(q.a) };
+      });
+      if (!list.length) { S.app.toast.create({ text: '這次小考老師還沒補上答案', closeTimeout: 3000 }).open(); return; }
+      nRun('nfix', shuffle(list.slice()), name, function (wrong) {
+        if (wrong.length) nFix(wrong, name, true);
+        else open('訂正重考', '<div class="dr-big">' + list.length + '<small> / ' + list.length + '</small></div><p class="dr-mut c">全對！這次小考訂正完成 👏</p>', function () { close(); }, { foot: '<a class="dr-btn" data-a="home">回練習</a>' });
+      });
+    });
+  }
+
+  window.STUPRAC = { cards: cards, bind: bind, teacher: teacher, flush: flush, memRange: memRange, quizFix: quizFix };
 })();
