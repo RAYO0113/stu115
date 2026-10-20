@@ -130,6 +130,100 @@ body{color:var(--ink)}
 .pvsel{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pvsel select{flex:1;min-width:120px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
 .pvsel button{padding:10px 16px;border:0;border-radius:10px;background:var(--red);color:#fff;font:inherit}
+
+/* 練習區（10/20：刷個題牲龍活虎／考注釋牲淚俱下，程式在 prac.js） */
+.pk{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px}
+.pkb{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:12px 4px 10px;border-radius:14px;background:var(--soft);color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pkb:active{transform:scale(.97)}
+.pkb i{font-size:26px;color:var(--red)}
+.pkb b{font-weight:700;font-size:14.5px;position:relative}
+.pkb b em{position:absolute;top:-10px;right:-18px;min-width:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font:600 11px/18px "Noto Sans TC",sans-serif;font-style:normal}
+.pkb span{font-size:11.5px;color:var(--muted);line-height:1.4}
+#dr{position:fixed;inset:0;z-index:7600;background:var(--paper);display:none;flex-direction:column}
+#dr.on{display:flex}
+html.dr-lock,html.dr-lock body{overflow:hidden}
+.dr-hd{flex:none;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;border-bottom:1px solid var(--line);background:var(--f7-bars-bg-color)}
+.dr-hd b{flex:1;font:700 17px "Noto Serif TC",serif;letter-spacing:1px}
+.dr-hd span{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dr-hd span.warn{color:var(--red);font-weight:700}
+.dr-x{font-size:24px;color:var(--ink);display:flex;cursor:pointer}
+.dr-bd{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 24px}
+.dr-ft{flex:none;display:flex;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--f7-bars-bg-color)}
+.dr-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;min-height:46px;border-radius:23px;background:var(--brown);color:#f3dfb0;font-weight:700;font-size:15.5px;cursor:pointer}
+.dark .dr-btn{background:var(--gold);color:#1a1209}
+.dr-btn.ghost{background:var(--soft);color:var(--ink)}
+.dr-btn.sm{flex:none;width:46px;font-size:22px}
+.dr-btn.ok{background:var(--ok);color:#fff}.dr-btn.ng{background:var(--red);color:#fff}
+.dr-btn[disabled]{opacity:.35}
+.dr-lab{margin:14px 0 8px;font-weight:700;font-size:14px;color:var(--muted)}
+.dr-lab:first-child{margin-top:2px}
+.dr-chips{display:flex;flex-wrap:wrap;gap:8px}
+.dr-chip{padding:7px 13px;border-radius:18px;border:1.5px solid var(--line);background:var(--card);font-size:14px;color:var(--ink);cursor:pointer}
+.dr-chip.on{border-color:var(--red);background:rgba(168,42,42,.1);color:var(--red);font-weight:700}
+.dr-chip[disabled]{opacity:.4}
+.dr-mut{font-size:13.5px;color:var(--muted);line-height:1.7;margin:12px 0}
+.dr-mut.c{text-align:center}
+.dr-meta{font-size:13px;color:var(--muted);margin-bottom:10px}
+.dr-tag{display:inline-block;margin-left:6px;padding:0 7px;border-radius:9px;background:rgba(168,42,42,.12);color:var(--red);font-size:11.5px;vertical-align:1px}
+.dr-q{font-size:17px;line-height:1.75;margin-bottom:10px}
+.dr-q img,.dr-psg img,.dr-extra img{max-width:100%!important;height:auto}
+.dr-extra{font-size:15px;line-height:1.7;margin:-2px 0 10px;padding:8px 12px;border-radius:10px;background:var(--soft)}
+.dr-psg{margin-bottom:12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.dr-psg summary{padding:9px 12px;font-size:14px;color:var(--muted);cursor:pointer}
+.dr-psg>div{padding:0 12px 12px;font-size:15.5px;line-height:1.85;font-family:"Noto Serif TC",serif}
+.dr-g{border-bottom:1.5px dotted var(--gold);cursor:pointer}.dr-g span{display:none}.dr-g.show span{display:inline;margin-left:3px;font-size:13px;color:var(--gold)}
+.dr-fig{margin:0 0 10px;text-align:center}.dr-fig img{max-width:100%}.dr-fig figcaption{font-size:13px;color:var(--muted)}
+.dr-op{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;margin-bottom:8px;border-radius:13px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;line-height:1.6;cursor:pointer}
+.dr-op b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:14px}
+.dr-op.sel{border-color:var(--brown);background:var(--soft)}.dark .dr-op.sel{border-color:var(--gold)}
+.dr-op.sel b{background:var(--brown);color:#fff}.dark .dr-op.sel b{background:var(--gold);color:#1a1209}
+.dr-op.ok{border-color:var(--ok);background:rgba(47,125,85,.1)}.dr-op.ok b{background:var(--ok);color:#fff}
+.dr-op.ng{border-color:var(--red);background:rgba(168,42,42,.08)}.dr-op.ng b{background:var(--red);color:#fff}
+.dr-res{margin:12px 0;padding:10px 14px;border-radius:12px;font-weight:700;font-size:16px}
+.dr-res.ok{background:rgba(47,125,85,.13);color:var(--ok)}.dr-res.ng{background:rgba(168,42,42,.1);color:var(--red)}
+.dr-res small{display:block;font-weight:500;font-size:13px;margin-top:2px}
+.dr-exp{font-size:14.5px;line-height:1.75;padding:10px 13px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.dr-exp>b{display:block;color:var(--gold);margin-bottom:2px}
+.dr-big{text-align:center;font:900 64px/1.1 "Noto Serif TC",serif;color:var(--red);margin-top:18px}
+.dr-big small{font-size:24px;color:var(--muted)}
+.dr-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px;text-align:center;font-size:12.5px;color:var(--muted)}
+.dr-stat div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 4px}
+.dr-stat b{display:block;font:700 20px "Noto Serif TC",serif;color:var(--ink)}
+.dr-wl{margin:0;padding-left:20px;font-size:14px;line-height:1.7}
+.dr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px;margin-bottom:14px}
+.dr-grid a{height:38px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:600;cursor:pointer}
+.dr-grid a.on{background:var(--brown);color:#fff}.dark .dr-grid a.on{background:var(--gold);color:#1a1209}
+.dr-grid a.cur{outline:2px solid var(--red)}
+.dr-rvi{border-top:1px solid var(--line)}
+.dr-rvi>a{display:flex;align-items:center;gap:8px;padding:10px 2px;color:var(--ink);cursor:pointer}
+.dr-rvi>a b{width:26px;text-align:center}.dr-rvi>a span{flex:1;font-size:13.5px;color:var(--muted)}
+.dr-rvi>a i{color:var(--muted);transition:transform .2s}.dr-rvi.open>a i{transform:rotate(180deg)}
+.dr-rvb{padding:2px 0 12px}
+.dr-rng{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:15px}
+.dr-rng select{padding:7px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.dr-rng span{margin-left:6px;font-size:13px;color:var(--muted)}
+.dr-tools{display:flex;justify-content:flex-end;margin:-4px 0 10px}
+.dr-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.dr-card.got{opacity:.6}
+.dr-card.big{padding:18px 16px}
+.dr-no{display:flex;align-items:center;font-size:13px;color:var(--muted);margin-bottom:4px}
+.dr-got{margin-left:auto;font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:3px}
+.dr-card.got .dr-got{color:var(--ok)}
+.dr-s{font-family:"Noto Serif TC",serif;font-size:17px;line-height:1.85}
+.dr-card.big .dr-s{font-size:19px}
+.dr-s mark{background:#ffe08a;color:inherit;padding:0 2px;border-radius:3px;font-weight:700}
+.dark .dr-s mark{background:#7a5a10;color:#fff}
+.dr-ask{margin-top:12px;font-weight:700;color:var(--red)}
+.dr-ans{margin-top:10px;padding:9px 12px;border-radius:10px;background:rgba(200,147,26,.13);font-size:15px;line-height:1.7}
+.dr-ans>div+div{margin-top:4px}
+.dr-ans .zy-note,.dr-exp .zy-note{display:block;font-size:12.5px;color:var(--muted)}
+.dr-peek{display:block;margin-top:10px;padding:9px;border-radius:10px;border:1.5px dashed var(--line);text-align:center;color:var(--muted);font-size:14px;cursor:pointer}
+.tp{padding:6px 8px;overflow-x:auto}
+.tp table{width:100%;border-collapse:collapse;font-size:13.5px;white-space:nowrap}
+.tp th{font-weight:500;color:var(--muted);text-align:left;padding:6px}
+.tp td{padding:6px;border-top:1px solid var(--line)}
+.tp td.r{color:var(--red);font-weight:700}.tp tr.dim td{color:var(--muted);opacity:.7}
+.it .ic b{font:700 17px "Noto Serif TC",serif}
 </style>
 </head>
 <body>
@@ -252,7 +346,7 @@ body{color:var(--ink)}
   takeHash();
   if (!lsGet(TK)) $('loading').classList.add('out');   /* 沒登入過：直接顯示登入畫面，不閃「讀取中」 */
 
-  var app = new Framework7({ el: '#app', theme: 'ios', darkMode: 'auto', colors: { primary: '#a82a2a' } });
+  var app = new Framework7({ el: '#app', theme: 'ios', darkMode: 'auto', colors: { primary: '#a82a2a' }, dialog: { buttonOk: '確定', buttonCancel: '取消' } });
 
   function showLogin(msg) {
     $('login-err').textContent = msg || '';
@@ -314,8 +408,11 @@ body{color:var(--ink)}
     var cs = Object.keys(cls);
     $('pvbar').textContent = '老師預覽模式：選一位學生，看他看到的畫面';
     $('pvpick').innerHTML = '<div class="sec"><h2>選學生</h2></div><div class="cd"><div class="pvsel"><select id="pv-c">' + cs.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('') +
-      '</select><select id="pv-s"></select><button id="pv-go">看</button></div></div>';
-    function seats() { $('pv-s').innerHTML = cls[$('pv-c').value].map(function (s) { return '<option value="' + s.seat + '">' + s.seat + ' 號 ' + esc(s.name) + '</option>'; }).join(''); }
+      '</select><select id="pv-s"></select><button id="pv-go">看</button></div></div><div id="pv-drill"></div>';
+    function seats() {
+      $('pv-s').innerHTML = cls[$('pv-c').value].map(function (s) { return '<option value="' + s.seat + '">' + s.seat + ' 號 ' + esc(s.name) + '</option>'; }).join('');
+      if (window.STUPRAC) STUPRAC.teacher($('pv-drill'), $('pv-c').value);   /* 10/20：選班就列這班的練習狀況 */
+    }
     $('pv-c').onchange = seats; seats();
     $('pv-go').onclick = function () { ssSet(PV, $('pv-c').value + '|' + $('pv-s').value); $('loading').classList.remove('out'); load(); };
     ['home', 'prac', 'me-score', 'me-miss', 'stats'].forEach(function (id) { $(id).innerHTML = ''; });
@@ -369,8 +466,10 @@ body{color:var(--ink)}
         (d ? md(d) + '・' : '') + '註' + esc(r.a) + '～註' + esc(r.b) + '・' + r.qs.length + ' 題</span></div><i class="ti ti-chevron-right chev"></i></div>' +
         '<div class="qzd">' + quizBody(r) + '</div></div>';
     }).join('') : '<div class="empty"><i class="ti ti-list-check"></i>還沒有小考紀錄<br>老師記錄小考後，題目和答案會出現在這裡，方便訂正</div>') + '</div>';
-    h += '<div class="sec"><h2>題庫練習</h2></div><div class="cd fade"><div class="empty"><i class="ti ti-target-arrow"></i>題庫準備中，之後可以在這裡一課一課練、<br>也能挑自己最弱的能力練。</div></div><div style="height:20px"></div>';
-    $('prac').innerHTML = h;
+    h += '<div style="height:20px"></div>';
+    /* 10/20：兩個練習區（prac.js）放在小考上面 */
+    $('prac').innerHTML = h.replace('<div class="sec"><h2>小考與訂正</h2>', (window.STUPRAC ? '<div id="pk-cards">' + STUPRAC.cards() + '</div>' : '') + '<div class="sec"><h2>小考與訂正</h2>');
+    if (window.STUPRAC) STUPRAC.bind($('prac'));
     var ql = $('qz-list');
     if (ql) ql.onclick = function (e) { var t = e.target.closest('[data-qz]'); if (t) t.parentNode.classList.toggle('open'); };
   }
@@ -417,8 +516,13 @@ body{color:var(--ink)}
     $('me-miss').innerHTML = h + '<p class="note">' + (D.pen ? '逾期的作業每多一個上課日再扣 ' + D.pen + ' 分（放假、段考日不算）。' : '目前遲交不扣分，但還是要記得補交喔。') + '</p>';
   }
 
+  /* 給 prac.js（練習區）用 */
+  window.STUAPP = { app: app, esc: esc, md: md, api: function () { return CFG.api; }, token: function () { return lsGet(TK); },
+    data: function () { return D; }, me: function () { return (D && D.me) || {}; } };
+
   load();
 })();
 </script>
+<script src="prac.js?v=20261020"></script>
 </body>
 </html>
