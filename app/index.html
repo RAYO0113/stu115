@@ -125,6 +125,8 @@ body{color:var(--ink)}
 .sem .r{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:14px;border-top:1px dashed var(--line)}.sem .r:first-child{border-top:0}
 .sem .r .n{width:3.2em;font-weight:500}.sem .r .w{width:4.2em;font-size:12px;color:var(--muted)}.sem .r .v{flex:1;text-align:right;font-variant-numeric:tabular-nums}
 .sem .r .v.no{color:var(--muted);font-size:12.5px}
+.sem .zb{display:flex;align-items:center;gap:6px;margin-top:8px;padding:8px 10px;border-radius:12px;background:rgba(168,42,42,.1);color:var(--red);font-size:13.5px;cursor:pointer}.sem .zb .ti-chevron-right{margin-left:auto}
+.sem .r .v i{font-style:normal;font-size:12px;color:var(--red);margin-left:4px}
 .sem .tip{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
 .sc{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .sc:first-child{border-top:0;padding-top:2px}
@@ -304,7 +306,6 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
         </div></div>
         <div class="page-content">
           <div id="pvpick"></div>
-          <div id="sem"></div>
           <div class="stats" id="stats"></div>
           <div class="seg"><div class="segmented segmented-strong">
             <a class="button tab-link button-active" href="#me-score">成績</a>
@@ -432,7 +433,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     }
     $('pv-c').onchange = seats; seats();
     $('pv-go').onclick = function () { ssSet(PV, $('pv-c').value + '|' + $('pv-s').value); $('loading').classList.remove('out'); load(); };
-    ['home', 'prac', 'me-score', 'me-miss', 'stats', 'sem'].forEach(function (id) { $(id).innerHTML = ''; });
+    ['home', 'prac', 'me-score', 'me-miss', 'stats'].forEach(function (id) { $(id).innerHTML = ''; });
     $('home').innerHTML = '<div class="cd" style="margin-top:12px"><div class="empty"><i class="ti ti-eye"></i>老師帳號：到「我的」選一位學生預覽</div></div>';
     $('hello').textContent = '老師好'; $('me-name').textContent = '老師預覽';
     app.tab.show('#view-me');
@@ -457,6 +458,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var cal = (D.cal || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
     var next = cal.filter(function (e) { return e.date >= td && e.date <= addD(td, 14); });
     var h = '<div class="hero fade"><div class="hi">' + esc(me.cls) + '　' + me.seat + ' 號</div><div class="meta">' + md(td) + (todo.length ? '・有 ' + todo.length + ' 件要注意' : '・目前沒有要補的') + '</div></div>';
+    h += '<div id="sem"></div>';   /* 10/22 老師：學期總成績放首頁（登入就看到） */
     h += '<div class="sec"><h2>要交、要補的</h2></div><div class="cd fade">' + (todo.length ? todo.map(function (it) { return itemRow(it, td); }).join('') :
       '<div class="empty"><i class="ti ti-circle-check"></i>都交了，很棒！</div>') + '</div>';
     h += '<div class="sec"><h2>本週</h2><span>' + md(week[0]).replace(/（.）/, '') + '～' + md(week[4]).replace(/（.）/, '') + '</span></div><div class="cd fade"><div class="days">' +
@@ -466,6 +468,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
       return '<div class="it"><div class="ic"><i class="ti ti-calendar-event"></i></div><div class="tx"><b>' + esc(e.item || e.kind) + '</b><span>' + esc(e.kind + q + (e.note ? '・' + e.note : '')) + '</span></div><span class="pill n">' + rel(e.date, td) + '</span></div>';
     }).join('') : '<div class="empty"><i class="ti ti-calendar"></i>老師還沒排</div>') + '</div><div style="height:20px"></div>';
     $('home').innerHTML = h;
+    renderSem();
   }
 
   function renderPrac(td) {
@@ -515,7 +518,6 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var items = D.items, scored = items.filter(function (it) { return it.final != null || (it.ess === null && /^[一二三]段$/.test(it.type) && it.raw != null); });   /* 段考作文還沒登也先列出選擇分數 */
     var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; }), late = items.filter(function (it) { return it.st === 'late'; }),
       wait = items.filter(function (it) { return it.st === 'sub'; });
-    renderSem();
     $('stats').innerHTML = '<div class="stat fade"><div class="k">已登記成績</div><div class="v ok">' + scored.length + '<small> 次</small></div></div>' +
       '<div class="stat fade"><div class="k">缺交、待補</div><div class="v' + (miss.length ? '' : ' ok') + '">' + miss.length + '<small> 件</small></div></div>';
     $('miss-n').textContent = miss.length ? '（' + miss.length + '）' : '';
@@ -549,13 +551,16 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var mask = lsGet(SEMHIDE) === '1', ess = s.essPending || [];
     var rows = Object.keys(s.w).filter(function (k) { return s.w[k] > 0; }).map(function (k) {
       var v = s.cats[k], t = v != null ? (Math.round(v * 10) / 10).toString() : ess.indexOf(k) >= 0 ? '作文待登，先不算' : '還沒有成績';
-      return '<div class="r"><span class="n">' + esc(k) + '</span><span class="w">配分 ' + s.w[k] + '</span><span class="v' + (v == null ? ' no' : '') + '">' + esc(t) + '</span></div>';
+      var z = s.zero && s.zero[k] ? '<i>（含 0 分 ' + s.zero[k] + ' 件）</i>' : '';
+      return '<div class="r"><span class="n">' + esc(k) + '</span><span class="w">配分 ' + s.w[k] + '</span><span class="v' + (v == null ? ' no' : '') + '">' + esc(t) + z + '</span></div>';
     }).join('');
     el.innerHTML = '<div class="sem fade' + (mask ? ' mask' : '') + '"><div class="hd" id="sem-hd"><span class="k">目前學期總成績' + (s.tentative ? '<em>配分暫定</em>' : '') + '</span>' +
       '<b>' + (mask ? '＊＊' : s.total == null ? '—' : (Math.round(s.total * 10) / 10).toString()) + '<small>' + (mask ? '點一下顯示' : '點一下遮住') + '</small></b></div>' +
+      (s.zeroN ? '<a class="zb" id="sem-zero"><i class="ti ti-alert-triangle"></i>有 ' + s.zeroN + ' 件缺交以 0 分計算，補交後會重新計算<i class="ti ti-chevron-right"></i></a>' : '') +   /* 10/22 老師：缺交算 0，提醒去補；不估算補交後的分數 */
       '<div class="rows">' + rows + '</div>' +
-      (mask ? '' : '<div class="tip">依目前已登記的成績和配分換算，還沒考的段考、作文待登的段考、沒有成績的項目先不算，之後會變動。' + (s.tentative ? '這班配分老師還在確認，可能會調整。' : '') + '以老師登記為準。</div>') + '</div>';
+      (mask ? '' : '<div class="tip">依目前已登記的成績和配分換算，還沒考的段考、作文待登的段考、沒有成績的項目先不算' + (s.zeroN ? '（過期沒交的以 0 分計算）' : '') + '，之後會變動。' + (s.tentative ? '這班配分老師還在確認，可能會調整。' : '') + '以老師登記為準。</div>') + '</div>';
     $('sem-hd').onclick = function () { lsSet(SEMHIDE, mask ? '' : '1'); renderSem(); };
+    if ($('sem-zero')) $('sem-zero').onclick = function () { app.tab.show('#view-me'); app.tab.show('#me-miss'); };
   }
 
   /* 給 prac.js（練習區）用 */
