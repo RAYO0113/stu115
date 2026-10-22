@@ -472,10 +472,17 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   }
 
   function renderPrac(td) {
-    var quiz = (D.cal || []).filter(function (e) { return e.quiz && e.date >= td; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
+    /* 10/22 老師：已經考過（老師記錄了那天的小考）就跳下一次；最近兩週還有別次就列在下面 */
+    var done = {}; (D.quiz || []).forEach(function (r) { if (r.at) done[ymd(new Date(r.at))] = 1; });
+    var qs = (D.cal || []).filter(function (e) { return e.quiz && e.date >= td && !done[e.date]; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }), quiz = qs[0];
+    function qMeta(e) { var q = e.quiz; return (q.ex && q.ex.length ? '・不考 ' + q.ex.length + ' 條' : '') + (q.nm || (q.pick || []).length ? '・必考 ' + ((q.nm || 0) + (q.pick || []).length) + ' 題' : ''); }
     var h = '<div class="hero prac fade"><div class="hi">' + (quiz ? '下次小考　' + md(quiz.date) : '最近沒有小考') + '</div><div class="meta">' +
-      (quiz ? esc((quiz.item || '') + '・範圍 ' + quiz.quiz.a + '～' + quiz.quiz.b + (quiz.quiz.nm ? '・必考 ' + quiz.quiz.nm + ' 題' : '')) : '有排小考會出現在這裡') + '</div>' +
+      (quiz ? esc((quiz.item || '') + '・範圍 ' + quiz.quiz.a + '～' + quiz.quiz.b + qMeta(quiz)) : '有排小考會出現在這裡') + '</div>' +
       (quiz && window.STUPRAC && (quiz.lessons || [])[0] ? '<a class="hbtn" id="qz-mem"><i class="ti ti-book"></i>先背書：註' + esc(quiz.quiz.a) + '～註' + esc(quiz.quiz.b) + '</a>' : '') + '</div>';   /* 10/21：考前先背這次範圍 */
+    var more = qs.slice(1).filter(function (e) { return e.date <= addD(td, 14) && (e.lessons || [])[0]; });
+    if (more.length && window.STUPRAC) h += '<div class="sec"><h2>之後的小考</h2></div><div class="cd fade">' + more.map(function (e, i) {
+      return '<div class="it" data-qm="' + (i + 1) + '"><div class="ic k"><i class="ti ti-book"></i></div><div class="tx"><b>' + esc(e.item || '註釋小考') + '</b><span>' + esc('範圍 ' + e.quiz.a + '～' + e.quiz.b + qMeta(e)) + '</span></div><span class="pill n">' + rel(e.date, td) + '</span></div>';
+    }).join('') + '</div>';
     /* 10/20：小考與訂正——全部列出（新的在上），點一筆展開題目、答案、訂正規則、要抄什麼（同舊班級網頁 stu_feed_addon） */
     /* 10/20 老師：10/18 以前的小考不列（只藏畫面，資料不動） */
     var QZ_FROM = '2026-10-18';
@@ -496,7 +503,8 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
       var f = e.target.closest('[data-qf]'); if (f) return STUPRAC.quizFix(rec[+f.getAttribute('data-qf')]);
       var t = e.target.closest('[data-qz]'); if (t) t.parentNode.classList.toggle('open');
     };
-    if ($('qz-mem')) $('qz-mem').onclick = function () { STUPRAC.memRange(quiz.lessons[0], quiz.quiz.a, quiz.quiz.b, quiz.quiz.must, quiz.item); };
+    if ($('qz-mem')) $('qz-mem').onclick = function () { STUPRAC.memRange(quiz.lessons[0], quiz.quiz.a, quiz.quiz.b, quiz.quiz, quiz.item); };   /* 10/22：整個 quiz（必考／不考／選題／小字詞） */
+    $('prac').querySelectorAll('[data-qm]').forEach(function (el) { el.onclick = function () { var e = qs[+el.getAttribute('data-qm')]; STUPRAC.memRange(e.lessons[0], e.quiz.a, e.quiz.b, e.quiz, e.item); }; });
   }
   function quizMark(s, w) { var i = s && w ? s.indexOf(w) : -1; return i < 0 ? esc(s || '') : esc(s.slice(0, i)) + '<mark>' + esc(w) + '</mark>' + esc(s.slice(i + w.length)); }
   function quizBody(r) {
@@ -570,6 +578,6 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   load();
 })();
 </script>
-<script src="prac.js?v=20261021"></script>
+<script src="prac.js?v=20261022"></script>
 </body>
 </html>

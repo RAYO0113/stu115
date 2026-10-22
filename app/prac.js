@@ -296,11 +296,19 @@
 
   /* ════════ 考注釋牲淚俱下 ════════ */
   var nsel = { les: '', a: 0, b: 0, n: 10 };
+  /* 10/22 老師：從「下次小考」進來＝照老師日曆的標記背書／抽考。nq＝{ must:{'註號|詞':1}（必考＋選題）, ex:{…}（不考）, vm:{'註號|詞':{小字詞:'must'|'ex'}}, n }；自己選範圍時 nq＝null */
+  var nq = null;
+  function nKey(it) { return it.no + '|' + it.w; }
+  function vOf(it) {   /* N選1 拆題：照老師的小字詞標記，必考的只留那個、不考的拿掉（至少留一個） */
+    var v = it.v, m = nq && nq.vm[nKey(it)]; if (!v || !m) return v;
+    var mu = v.filter(function (c) { return m[c[0]] === 'must'; }); if (mu.length) return mu;
+    var r = v.filter(function (c) { return m[c[0]] !== 'ex'; }); return r.length ? r : v;
+  }
   function nItems(les) { return (DD().notes[les] || []).map(function (it, i) { return { les: les, i: i, it: it }; }); }
   function nos(les) { var s = {}; (DD().notes[les] || []).forEach(function (it) { s[it.no] = 1; }); return Object.keys(s).map(Number).sort(function (x, y) { return x - y; }); }
   /* 一題＝一個要考的字詞：有「N選1」拆題的註釋，從整句／各小字詞隨機抽一個（同老師的注釋小考） */
   function nCard(x, pickV) {
-    var it = x.it, v = it.v;
+    var it = x.it, v = vOf(it);
     if (v && pickV) { var c = v[Math.floor(Math.random() * v.length)]; return { id: 'n:' + x.les + '|' + it.no + '|' + c[0], les: x.les, no: it.no, s: it.s, w: c[0], a: c[1], b: c[2], ans: c[3] }; }
     var at = it.p >= 0 && it.s.substr(it.p, it.w.length) === it.w ? it.p : it.s.indexOf(it.w);
     return { id: 'n:' + x.les + '|' + it.no + '|' + it.w, les: x.les, no: it.no, s: it.s, w: it.w, a: at, b: at < 0 ? -1 : at + it.w.length, ans: it.a };
@@ -323,6 +331,7 @@
     return esc(s.slice(0, a)) + '<mark>' + esc(s.slice(a, b)) + '</mark>' + esc(s.slice(b));
   }
   function nSetup(mode) {
+    nq = null;
     var L = noteLessons();
     if (!nsel.les || !DD().notes[nsel.les]) nsel.les = L[L.length - 1][0];
     function draw() {
@@ -351,21 +360,22 @@
     draw();
   }
   function rangeLabel() { return nsel.les + ' 註' + nsel.a + '～' + nsel.b; }
-  function inRange() { return nItems(nsel.les).filter(function (x) { return x.it.no >= nsel.a && x.it.no <= nsel.b; }); }
+  function inRange() { return nItems(nsel.les).filter(function (x) { return x.it.no >= nsel.a && x.it.no <= nsel.b && !(nq && nq.ex[nKey(x.it)]); }); }   /* 老師點「不考」的不列 */
 
   /* 背書模式 */
   function nMem(must, title) {   /* must＝{'註號|詞':1} 必考（同老師日曆 quiz.must）（從「下次小考」進來時標出）；title＝那次小考名稱 */
     must = must || {};
     var list = inRange(), mem = lsJ(MEM, {}), all = false, shown = {};
+    if (nq) list = list.filter(function (x) { return must[nKey(x.it)]; }).concat(list.filter(function (x) { return !must[nKey(x.it)]; }));   /* 必考排前面 */
     function draw() {
       var got = list.filter(function (x) { return mem[x.les + '|' + x.i]; }).length;
       open('背書模式', '<div class="dr-meta">' + esc((title ? title + '・' : '') + rangeLabel()) + '・記住 ' + got + ' / ' + list.length + ' 條</div>' +
         '<div class="dr-tools"><a class="dr-chip' + (all ? ' on' : '') + '" data-a="all">' + (all ? '全部遮起來' : '全部顯示') + '</a></div>' +
         list.map(function (x, k) {
           var c = nCard(x, false), it = x.it, op = all || shown[k], key = x.les + '|' + x.i;
-          var ans = it.v ? it.v.map(function (v) { return '<div><b>' + esc(v[0]) + '</b>：' + v[3] + '</div>'; }).join('') : '<div><b>' + esc(it.w) + '</b>：' + it.a + '</div>';
-          if (it.v) { var wh = it.v.filter(function (v) { return v[4]; })[0]; if (wh) c = { s: it.s, a: wh[1], b: wh[2] }; }
-          return '<div class="dr-card' + (mem[key] ? ' got' : '') + '"><div class="dr-no">註' + it.no + (must[it.no + '|' + it.w] ? '<span class="dr-tag">必考</span>' : '') + (it.v ? '<span class="dr-tag">' + it.v.length + ' 選 1</span>' : '') + '<a class="dr-got" data-a="got|' + k + '">' + (mem[key] ? '<i class="ti ti-circle-check-filled"></i> 記住了' : '<i class="ti ti-circle"></i> 記住了') + '</a></div>' +
+          var vv = vOf(it), ans = vv ? vv.map(function (v) { return '<div><b>' + esc(v[0]) + '</b>：' + v[3] + '</div>'; }).join('') : '<div><b>' + esc(it.w) + '</b>：' + it.a + '</div>';
+          if (vv) { var wh = vv.filter(function (v) { return v[4]; })[0]; if (wh) c = { s: it.s, a: wh[1], b: wh[2] }; }
+          return '<div class="dr-card' + (mem[key] ? ' got' : '') + '"><div class="dr-no">註' + it.no + (must[it.no + '|' + it.w] ? '<span class="dr-tag">必考</span>' : '') + (vv && vv.length > 1 ? '<span class="dr-tag">' + vv.length + ' 選 1</span>' : '') + '<a class="dr-got" data-a="got|' + k + '">' + (mem[key] ? '<i class="ti ti-circle-check-filled"></i> 記住了' : '<i class="ti ti-circle"></i> 記住了') + '</a></div>' +
             '<div class="dr-s">' + sent(c) + '</div>' +
             (op ? '<div class="dr-ans" data-a="tog|' + k + '">' + ans + '</div>' : '<a class="dr-peek" data-a="tog|' + k + '">點一下看解釋</a>') + '</div>';
         }).join(''),
@@ -384,7 +394,9 @@
 
   /* 刷題模式（抽考）→ 考完自動進訂正模式 */
   function nQuiz() {
-    var list = shuffle(inRange().slice()).slice(0, nsel.n).map(function (x) { return nCard(x, true); });
+    var pool = shuffle(inRange().slice()), n = nq ? nq.n : nsel.n;
+    if (nq) pool = pool.filter(function (x) { return nq.must[nKey(x.it)]; }).concat(pool.filter(function (x) { return !nq.must[nKey(x.it)]; }));   /* 必考一定抽到，剩下名額隨機 */
+    var list = shuffle(pool.slice(0, n)).map(function (x) { return nCard(x, true); });
     nRun('nquiz', list, rangeLabel(), function (wrong) { if (wrong.length) nFix(wrong, rangeLabel(), true); });
   }
   /* 一輪抽考：看題 → 看答案 → 自己判對錯 */
@@ -476,12 +488,15 @@
   /* ════════ 接到真的注釋小考（10/21 老師：小考考前先背書，考完那筆小考紀錄就是訂正） ════════ */
   function lesKey(n) { var l = (DD().les || [])[+n - 1]; return l && (DD().notes[l[0]] || []).length ? l[0] : ''; }
   /* 「下次小考」→ 背這次範圍：n＝第幾課，a～b＝註號範圍，must＝必考註號 */
-  function memRange(n, a, b, must, title) {
+  function memRange(n, a, b, q, title) {   /* q＝日曆小考 { must, ex, pick, vm, n }（後台 gr-16；舊後台只有數量，就只照範圍） */
     need(function () {
       var k = lesKey(n);
       if (!k) { S.app.toast.create({ text: '這一課的注釋還沒放進來', closeTimeout: 3000 }).open(); return; }
       nsel.les = k; nsel.a = +a; nsel.b = +b;
-      var m = {}; (must || []).forEach(function (x) { m[String(x)] = 1; });
+      q = Array.isArray(q) ? { must: q } : (q || {});
+      var m = {}, ex = {}; (q.must || []).concat(q.pick || []).forEach(function (x) { m[String(x)] = 1; }); (q.ex || []).forEach(function (x) { ex[String(x)] = 1; });
+      var np = (q.pick || []).length;
+      nq = { must: m, ex: ex, vm: q.vm || {}, n: np ? np + (q.must || []).length : (+q.n || nsel.n) };
       nMem(m, title);
     });
   }
