@@ -4,6 +4,7 @@
 const TEXTBOOK = (function () {
   var o = {}, a = window.TB_LESSONS || [];
   a.forEach(function (p) { o[p[0]] = p[1]; });
+  var N = 32;              /* V155：加第一冊 L07、L08、L10（30～32.js），29 → 32 */
   if (a.length !== 1) {   /* 學生版一次一課 */   /* 課檔沒載完整：停止主程式，避免在資料不全時寫入任何紀錄 */
     var m = '課文資料沒有完整載入（學生版 1 課只讀到 ' + a.length + ' 課），請重新整理網頁。';
     alert(m); throw new Error(m);
