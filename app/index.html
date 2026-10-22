@@ -114,6 +114,18 @@ body{color:var(--ink)}
 .stat .v{font:900 32px/1.15 "Noto Serif TC",serif;color:var(--red);font-variant-numeric:tabular-nums}
 .stat .v.ok{color:var(--ok)}.stat .v small{font-size:15px;color:var(--muted);font-weight:500}
 .seg{margin:0 16px 12px}
+/* 10/22 目前學期總成績（後台 gr-16 sem；算法同老師後台；不含身份別、及格線） */
+.sem{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:0 16px 12px;padding:14px 16px}
+.sem .hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;cursor:pointer}
+.sem .hd .k{font-size:13px;color:var(--muted)}.sem .hd .k em{font-style:normal;margin-left:6px;padding:0 6px;border-radius:8px;background:rgba(200,147,26,.18);color:#9a6c0c;font-size:11.5px}
+.dark .sem .hd .k em{color:var(--gold)}
+.sem .hd b{font:900 34px/1.1 "Noto Serif TC",serif;color:var(--ink);font-variant-numeric:tabular-nums}.sem .hd b small{font-size:13px;color:var(--muted);font-weight:500;margin-left:4px}
+.sem.mask .hd b{letter-spacing:2px;color:var(--muted)}.sem.mask .rows{display:none}
+.sem .rows{margin-top:8px;border-top:1px solid var(--line)}
+.sem .r{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:14px;border-top:1px dashed var(--line)}.sem .r:first-child{border-top:0}
+.sem .r .n{width:3.2em;font-weight:500}.sem .r .w{width:4.2em;font-size:12px;color:var(--muted)}.sem .r .v{flex:1;text-align:right;font-variant-numeric:tabular-nums}
+.sem .r .v.no{color:var(--muted);font-size:12.5px}
+.sem .tip{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
 .sc{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .sc:first-child{border-top:0;padding-top:2px}
 .sc .tx{flex:1;min-width:0}.sc .tx b{display:block;font-weight:500}.sc .tx>span{font-size:12.5px;color:var(--muted)}
@@ -292,6 +304,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
         </div></div>
         <div class="page-content">
           <div id="pvpick"></div>
+          <div id="sem"></div>
           <div class="stats" id="stats"></div>
           <div class="seg"><div class="segmented segmented-strong">
             <a class="button tab-link button-active" href="#me-score">成績</a>
@@ -419,7 +432,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     }
     $('pv-c').onchange = seats; seats();
     $('pv-go').onclick = function () { ssSet(PV, $('pv-c').value + '|' + $('pv-s').value); $('loading').classList.remove('out'); load(); };
-    ['home', 'prac', 'me-score', 'me-miss', 'stats'].forEach(function (id) { $(id).innerHTML = ''; });
+    ['home', 'prac', 'me-score', 'me-miss', 'stats', 'sem'].forEach(function (id) { $(id).innerHTML = ''; });
     $('home').innerHTML = '<div class="cd" style="margin-top:12px"><div class="empty"><i class="ti ti-eye"></i>老師帳號：到「我的」選一位學生預覽</div></div>';
     $('hello').textContent = '老師好'; $('me-name').textContent = '老師預覽';
     app.tab.show('#view-me');
@@ -502,6 +515,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var items = D.items, scored = items.filter(function (it) { return it.final != null || (it.ess === null && /^[一二三]段$/.test(it.type) && it.raw != null); });   /* 段考作文還沒登也先列出選擇分數 */
     var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; }), late = items.filter(function (it) { return it.st === 'late'; }),
       wait = items.filter(function (it) { return it.st === 'sub'; });
+    renderSem();
     $('stats').innerHTML = '<div class="stat fade"><div class="k">已登記成績</div><div class="v ok">' + scored.length + '<small> 次</small></div></div>' +
       '<div class="stat fade"><div class="k">缺交、待補</div><div class="v' + (miss.length ? '' : ' ok') + '">' + miss.length + '<small> 件</small></div></div>';
     $('miss-n').textContent = miss.length ? '（' + miss.length + '）' : '';
@@ -516,13 +530,32 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
         '<div class="bar"><i style="width:' + w + '%"></i>' + (aw == null ? '' : '<em style="left:' + aw + '%"></em>') + '</div></div>' +
         '<div class="num"><b>' + (it.final == null ? '—' : it.final) + '</b><span>' + (it.avg == null ? '' : '班平均 ' + it.avg) + '</span></div></div>';
     }).join('') : '<div class="empty"><i class="ti ti-notebook"></i>還沒有登記的成績</div>') + '</div>' +
-      '<p class="note">紅條＝你的分數，細線＝班平均（只算有分數的同學）。以老師登記為準，有疑問請找老師。<br>學期成績和名次：老師定好配分後開放。</p>';
+      '<p class="note">紅條＝你的分數，細線＝班平均（只算有分數的同學）。以老師登記為準，有疑問請找老師。<br>名次：之後開放。</p>';
     var h = '';
     if (miss.length) h += '<div class="sec"><h2>還沒交、待補</h2></div><div class="cd">' + miss.map(function (it) { return itemRow(it, td); }).join('') + '</div>';
     if (late.length) h += '<div class="sec"><h2>已交但遲交</h2></div><div class="cd">' + late.map(function (it) { return itemRow(it, td); }).join('') + '</div>';
     if (wait.length) h += '<div class="sec"><h2>已交、等老師登分</h2></div><div class="cd">' + wait.map(function (it) { return itemRow(it, td); }).join('') + '</div>';
     if (!h) h = '<div class="cd"><div class="empty"><i class="ti ti-circle-check"></i>沒有缺交，也沒有遲交！</div></div>';
     $('me-miss').innerHTML = h + '<p class="note">' + (D.pen ? '逾期的作業每多一個上課日再扣 ' + D.pen + ' 分（放假、段考日不算）。' : '目前遲交不扣分，但還是要記得補交喔。') + '</p>';
+  }
+
+  /* 10/22 目前學期總成績：後台 gr-16 meGet 的 sem（照配分換算，同老師後台）。舊後台沒有 sem 就不顯示。
+     只顯示分數與配分；身份別、及格線、及格／補考判定後台本來就不給（RayOclass RULES.md §2）。點標題可遮住（記在本機）。 */
+  var SEMHIDE = 'stuapp_semhide_v1';
+  function renderSem() {
+    var s = D.sem, el = $('sem');
+    if (!s) { el.innerHTML = ''; return; }
+    if (s.hidden) { el.innerHTML = '<div class="sem fade"><div class="hd"><span class="k">目前學期總成績</span></div><div class="tip">老師確認配分後開放。</div></div>'; return; }
+    var mask = lsGet(SEMHIDE) === '1', ess = s.essPending || [];
+    var rows = Object.keys(s.w).filter(function (k) { return s.w[k] > 0; }).map(function (k) {
+      var v = s.cats[k], t = v != null ? (Math.round(v * 10) / 10).toString() : ess.indexOf(k) >= 0 ? '作文待登，先不算' : '還沒有成績';
+      return '<div class="r"><span class="n">' + esc(k) + '</span><span class="w">配分 ' + s.w[k] + '</span><span class="v' + (v == null ? ' no' : '') + '">' + esc(t) + '</span></div>';
+    }).join('');
+    el.innerHTML = '<div class="sem fade' + (mask ? ' mask' : '') + '"><div class="hd" id="sem-hd"><span class="k">目前學期總成績' + (s.tentative ? '<em>配分暫定</em>' : '') + '</span>' +
+      '<b>' + (mask ? '＊＊' : s.total == null ? '—' : (Math.round(s.total * 10) / 10).toString()) + '<small>' + (mask ? '點一下顯示' : '點一下遮住') + '</small></b></div>' +
+      '<div class="rows">' + rows + '</div>' +
+      (mask ? '' : '<div class="tip">依目前已登記的成績和配分換算，還沒考的段考、作文待登的段考、沒有成績的項目先不算，之後會變動。' + (s.tentative ? '這班配分老師還在確認，可能會調整。' : '') + '以老師登記為準。</div>') + '</div>';
+    $('sem-hd').onclick = function () { lsSet(SEMHIDE, mask ? '' : '1'); renderSem(); };
   }
 
   /* 給 prac.js（練習區）用 */
