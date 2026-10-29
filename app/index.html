@@ -197,6 +197,13 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
 .dr-op.sel b{background:var(--brown);color:#fff}.dark .dr-op.sel b{background:var(--gold);color:#1a1209}
 .dr-op.ok{border-color:var(--ok);background:rgba(47,125,85,.1)}.dr-op.ok b{background:var(--ok);color:#fff}
 .dr-op.ng{border-color:var(--red);background:rgba(168,42,42,.08)}.dr-op.ng b{background:var(--red);color:#fff}
+/* 10/29 刪去法：選項右邊「刪去／復原」（同舊學霸網 10/12） */
+.dr-orow{display:flex;gap:6px;align-items:stretch;margin-bottom:8px}.dr-orow .dr-op{flex:1;min-width:0;margin-bottom:0}
+.dr-el{flex:none;width:52px;display:flex;align-items:center;justify-content:center;border-radius:13px;border:1.5px dashed var(--line);color:var(--muted);font-size:14px;cursor:pointer;user-select:none}
+.dr-el.on{border-style:solid;border-color:var(--brown);color:var(--brown)}.dark .dr-el.on{border-color:var(--gold);color:var(--gold)}
+.dr-op.x{opacity:.38}.dr-op.x span{text-decoration:line-through}.dr-op.x2{opacity:.6}
+.dr-op.shake{animation:drShake .3s}@keyframes drShake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.dr-tip{font-size:13.5px;color:var(--muted);margin:-4px 0 10px}
 .dr-res{margin:12px 0;padding:10px 14px;border-radius:12px;font-weight:700;font-size:16px}
 .dr-res.ok{background:rgba(47,125,85,.13);color:var(--ok)}.dr-res.ng{background:rgba(168,42,42,.1);color:var(--red)}
 .dr-res small{display:block;font-weight:500;font-size:13px;margin-top:2px}
@@ -578,6 +585,6 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   load();
 })();
 </script>
-<script src="prac.js?v=20261022"></script>
+<script src="prac.js?v=20261029"></script>
 </body>
 </html>

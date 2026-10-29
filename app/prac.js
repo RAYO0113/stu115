@@ -168,15 +168,26 @@
   }
   function gloss(t) { return String(t || '').replace(/\{g:([^|]*)\|([^}]*)\}/g, '<span class="dr-g" data-a="g">$1<span>$2</span></span>'); }
   function qMeta(it) { var e = book()['q:' + it.id]; return lno(it.les) + ' ' + it.les + '・' + it.sn + ' 第 ' + it.n + ' 題' + (e && !e.f ? '<span class="dr-tag">錯過 ' + e.w + ' 次</span>' : ''); }
-  function qBody(it, pick, show) {   /* pick＝選了哪個；show＝顯示對錯與解析 */
+  /* 10/29 刪去法（同舊學霸網 10/12）：選項右邊「刪去／復原」，刪掉的變淡、不能直接作答；第一題題目下方提示；對完答案後刪過的淡一點 */
+  var EL_TIP = '<p class="dr-tip">💡 不確定的選項可以先按「刪去」，刪錯了按「復原」</p>';
+  function elTap(el, a, b) {   /* 點到刪去鈕／被刪的選項：回傳 true＝已處理（不算作答） */
+    var p = a.split('|');
+    if (p[0] === 'el') { if (el[p[1]]) delete el[p[1]]; else el[p[1]] = 1; return true; }
+    if (p[0] === 'pick' && el[p[1]]) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return true; }
+    return false;
+  }
+  function qBody(it, pick, show, el, tip) {   /* pick＝選了哪個；show＝顯示對錯與解析；el＝刪去的選項 {A:1}；tip＝顯示刪去提示 */
     var h = '<div class="dr-meta">' + qMeta(it) + '</div>';
     if (it.psg) h += '<details class="dr-psg" open><summary>' + (/^(\s*<img[^>]*>\s*)+$/.test(it.psg) ? '題組圖文（同上一題）' : '閱讀文章') + '</summary><div>' + gloss(it.psg) + '</div></details>';
     h += '<div class="dr-q">' + it.stem + '</div>';
+    if (tip && !show) h += EL_TIP;
     if (it.extra) h += '<div class="dr-extra">' + it.extra + '</div>';
     if (it.imgs) h += it.imgs.map(function (g) { return '<figure class="dr-fig"><img src="' + esc(g[1]) + '" alt="">' + (g[0] ? '<figcaption>（' + esc(g[0]) + '）</figcaption>' : '') + '</figure>'; }).join('');
     h += it.opts.map(function (o) {
-      var c = show ? (o[0] === it.ans ? ' ok' : o[0] === pick ? ' ng' : '') : (o[0] === pick ? ' sel' : '');
-      return '<a class="dr-op' + c + '" data-a="pick|' + esc(o[0]) + '"' + (show ? ' disabled' : '') + '><b>' + esc(o[0]) + '</b><span>' + o[1] + '</span></a>';
+      var c = show ? (o[0] === it.ans ? ' ok' : o[0] === pick ? ' ng' : '') : (o[0] === pick ? ' sel' : ''), x = el && el[o[0]];
+      var op = '<a class="dr-op' + c + (x ? (show ? ' x2' : ' x') : '') + '" data-a="pick|' + esc(o[0]) + '"' + (show ? ' disabled' : '') + '><b>' + esc(o[0]) + '</b><span>' + o[1] + '</span></a>';
+      if (show || !el) return op;
+      return '<div class="dr-orow">' + op + '<a class="dr-el' + (x ? ' on' : '') + '" data-a="el|' + esc(o[0]) + '">' + (x ? '復原' : '刪去') + '</a></div>';
     }).join('');
     if (show) {
       var ex = '';
@@ -190,28 +201,29 @@
 
   /* ⚡ 快速刷題／修復舊傷：一題一題，作答馬上對答案 */
   function quickStart(mode, list, les) {
-    var run = { i: 0, res: [], t0: Date.now(), pick: '' }, sent = 0;
+    var run = { i: 0, res: [], t0: Date.now(), pick: '', el: {} }, sent = 0;
     function flushPart(done) { var r = run.res.slice(sent); sent = run.res.length; record(mode, les, (Date.now() - run.t0) / 1000, r, done); }
     quitFn = function () { flushPart(false); };
-    function show() {
+    function show(keep) {
       var it = list[run.i], ans = run.pick, done = !!ans, ok = ans === it.ans, msg = '';
       if (done && mode === 'fix') {   /* 整輪結束才送出；同一輪每題只出現一次，所以用目前的連對次數＋1 推算 */
         var e = book()['q:' + it.id], s1 = ((e && e.s) || 0) + 1;
         msg = !ok ? '又錯了，連對次數歸零' : s1 >= PASS ? '🎉 修好了！這題移出修復舊傷' : '再答對 ' + (PASS - s1) + ' 次就修好';
       }
       var rs = done ? '<div class="dr-res ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '⭕ 答對了！' : '❌ 正確答案是 (' + esc(it.ans) + ')') + (msg ? '<small>' + msg + '</small>' : '') + '</div>' : '';
-      var body = qBody(it, ans, done);   /* 對錯放在選項下面、解析上面 */
+      var body = qBody(it, ans, done, run.el, run.i === 0);   /* 對錯放在選項下面、解析上面 */
       body = body.indexOf('<div class="dr-exp">') >= 0 ? body.replace('<div class="dr-exp">', rs + '<div class="dr-exp">') : body + rs;
       open(mode === 'fix' ? '修復舊傷' : '⚡ 快速刷題', body,
-        function (a) {
+        function (a, b) {
           var p = a.split('|');
+          if (!run.pick && elTap(run.el, a, b)) { if (p[0] === 'el') show(true); return; }
           if (p[0] === 'pick' && !run.pick) {
             run.pick = p[1]; run.res.push({ id: 'q:' + it.id, ok: p[1] === it.ans ? 1 : 0 });
             show();
             var r = document.querySelector('#dr .dr-res'); if (r && r.scrollIntoView) r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-          } else if (a === 'next') { run.i++; run.pick = ''; if (run.i < list.length) show(); else end(); }
+          } else if (a === 'next') { run.i++; run.pick = ''; run.el = {}; if (run.i < list.length) show(); else end(); }
         },
-        { right: (run.i + 1) + ' / ' + list.length, foot: done ? '<a class="dr-btn" data-a="next">' + (run.i + 1 < list.length ? '下一題 →' : '看結果') + '</a>' : '' });
+        { keep: keep, right: (run.i + 1) + ' / ' + list.length, foot: done ? '<a class="dr-btn" data-a="next">' + (run.i + 1 < list.length ? '下一題 →' : '看結果') + '</a>' : '' });
     }
     function end() {
       quitFn = null;
@@ -236,7 +248,7 @@
 
   /* ⏱ 練點速度：仿 A 卷，計時，交卷才對答案 */
   function speedStart(list, limit, les) {
-    var run = { i: 0, ans: {}, t0: Date.now(), grid: false };
+    var run = { i: 0, ans: {}, t0: Date.now(), grid: false, el: {} };   /* el[題序]＝這題刪去的選項 */
     quitFn = function () { submit(true, true); };
     function left() { return limit - (Date.now() - run.t0) / 1000; }
     function tick() {
@@ -244,12 +256,13 @@
       if (el) { el.textContent = '⏱ ' + mmss(l); el.className = l < 60 ? 'warn' : ''; }
       if (l <= 0) { stopTimer(); submit(true); }
     }
-    function show() {
-      var it = list[run.i], n = Object.keys(run.ans).length;
+    function show(keep) {
+      var it = list[run.i], n = Object.keys(run.ans).length, el = run.el[run.i] = run.el[run.i] || {};
       var grid = run.grid ? '<div class="dr-grid">' + list.map(function (x, k) { return '<a data-a="go|' + k + '" class="' + (run.ans[k] ? 'on' : '') + (k === run.i ? ' cur' : '') + '">' + (k + 1) + '</a>'; }).join('') + '</div>' : '';
-      open('⏱ 練點速度', '<div class="dr-meta">第 ' + (run.i + 1) + ' / ' + list.length + ' 題・已作答 ' + n + ' 題</div>' + grid + qBody(it, run.ans[run.i], false),
-        function (a) {
+      open('⏱ 練點速度', '<div class="dr-meta">第 ' + (run.i + 1) + ' / ' + list.length + ' 題・已作答 ' + n + ' 題</div>' + grid + qBody(it, run.ans[run.i], false, el, run.i === 0),
+        function (a, b) {
           var p = a.split('|');
+          if (elTap(el, a, b)) { if (p[0] === 'el') { if (el[p[1]] && run.ans[run.i] === p[1]) delete run.ans[run.i]; show(true); } return; }   /* 刪掉已選的那個＝取消作答 */
           if (p[0] === 'pick') { run.ans[run.i] = p[1]; if (run.i < list.length - 1) { run.i++; } show(); }
           else if (a === 'prev' && run.i > 0) { run.i--; show(); }
           else if (a === 'next' && run.i < list.length - 1) { run.i++; show(); }
@@ -261,7 +274,7 @@
             else submit(false);
           }
         },
-        { right: '⏱ ' + mmss(left()), foot: '<a class="dr-btn ghost sm" data-a="prev"' + (run.i ? '' : ' disabled') + '><i class="ti ti-chevron-left"></i></a><a class="dr-btn ghost sm" data-a="grid"><i class="ti ti-layout-grid"></i></a><a class="dr-btn ghost sm" data-a="next"' + (run.i < list.length - 1 ? '' : ' disabled') + '><i class="ti ti-chevron-right"></i></a><a class="dr-btn" data-a="submit">交卷</a>' });
+        { keep: keep, right: '⏱ ' + mmss(left()), foot: '<a class="dr-btn ghost sm" data-a="prev"' + (run.i ? '' : ' disabled') + '><i class="ti ti-chevron-left"></i></a><a class="dr-btn ghost sm" data-a="grid"><i class="ti ti-layout-grid"></i></a><a class="dr-btn ghost sm" data-a="next"' + (run.i < list.length - 1 ? '' : ' disabled') + '><i class="ti ti-chevron-right"></i></a><a class="dr-btn" data-a="submit">交卷</a>' });
       tick();
     }
     function submit(auto, quiet) {
@@ -278,7 +291,7 @@
           '<div class="dr-lab">逐題檢討（點題號看題目和解析）</div><div class="dr-rv">' + list.map(function (it, k) {
             var ok = run.ans[k] === it.ans;
             return '<div class="dr-rvi' + (openK === k ? ' open' : '') + '"><a data-a="rv|' + k + '" class="' + (ok ? 'ok' : 'ng') + '"><b>' + (k + 1) + '</b>' + (ok ? '⭕' : '❌') + '<span>你選 ' + (run.ans[k] ? '(' + esc(run.ans[k]) + ')' : '—') + '・答案 (' + esc(it.ans) + ')</span><i class="ti ti-chevron-down"></i></a>' +
-              (openK === k ? '<div class="dr-rvb">' + qBody(it, run.ans[k] || '', true) + '</div>' : '') + '</div>';
+              (openK === k ? '<div class="dr-rvb">' + qBody(it, run.ans[k] || '', true, run.el[k]) + '</div>' : '') + '</div>';
           }).join('') + '</div>',
           function (a) {
             var p = a.split('|');
