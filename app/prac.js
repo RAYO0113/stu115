@@ -118,10 +118,17 @@
     }
     onAct = act;
     var keep = opt && opt.keep && document.getElementById('dr-bd'), y = keep ? keep.scrollTop : 0;   /* keep：重畫同一頁時不要跳回最上面 */
+    var ob = document.getElementById('dr-bd'), yq = keep && keep.querySelector('.dr-qp'), op = ob && ob.querySelector('.dr-split .dr-psg>div');   /* 同一篇文章（重畫或題組下一題）文章框不跳回最上面 */
+    yq = yq ? yq.scrollTop : 0; var yp = op ? op.scrollTop : 0, hp = op ? op.innerHTML : null;
     ov.innerHTML = '<div class="dr-hd"><a data-a="close" class="dr-x" aria-label="關閉"><i class="ti ti-x"></i></a><b>' + title + '</b><span id="dr-hr">' + ((opt && opt.right) || '') + '</span></div>' +
       '<div class="dr-bd" id="dr-bd">' + body + '</div>' + (opt && opt.foot ? '<div class="dr-ft">' + opt.foot + '</div>' : '');
     ov.classList.add('on'); document.documentElement.classList.add('dr-lock');
     var bd = document.getElementById('dr-bd'); if (bd) bd.scrollTop = y;
+    if (bd) {
+      var sq = bd.querySelector('.dr-qp'), sp = bd.querySelector('.dr-split .dr-psg>div');
+      bd.classList.toggle('sp', !!sq);
+      if (sq) sq.scrollTop = yq; if (sp && sp.innerHTML === hp) sp.scrollTop = yp;
+    }
   }
   var quitFn = null;   /* 做到一半關掉時要做什麼（送出已作答的錯題） */
   function askClose() {
@@ -176,9 +183,10 @@
     if (p[0] === 'pick' && el[p[1]]) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return true; }
     return false;
   }
-  function qBody(it, pick, show, el, tip) {   /* pick＝選了哪個；show＝顯示對錯與解析；el＝刪去的選項 {A:1}；tip＝顯示刪去提示 */
-    var h = '<div class="dr-meta">' + qMeta(it) + '</div>';
-    if (it.psg) h += '<details class="dr-psg" open><summary>' + (/^(\s*<img[^>]*>\s*)+$/.test(it.psg) ? '題組圖文（同上一題）' : '閱讀文章') + '</summary><div>' + gloss(it.psg) + '</div></details>';
+  function qBody(it, pick, show, el, tip, nosplit) {   /* pick＝選了哪個；show＝顯示對錯與解析；el＝刪去的選項 {A:1}；tip＝顯示刪去提示；nosplit＝不分割（檢討清單） */
+    var h = '', ps = '';
+    if (it.psg) ps = '<details class="dr-psg" open><summary>' + (/^(\s*<img[^>]*>\s*)+$/.test(it.psg) ? '題組圖文（同上一題）' : '閱讀文章') + '</summary><div>' + gloss(it.psg) + '</div></details>';
+    if (ps && nosplit) h += ps;
     h += '<div class="dr-q">' + it.stem + '</div>';
     if (tip && !show) h += EL_TIP;
     if (it.extra) h += '<div class="dr-extra">' + it.extra + '</div>';
@@ -196,7 +204,8 @@
       if (!it.exp) it.opts.forEach(function (o) { if (o[2]) ex += '<div>' + (/^\s*[（(][A-D][)）]/.test(plain(o[2])) ? '' : '<b>(' + esc(o[0]) + ')</b> ') + o[2] + '</div>'; });
       if (ex) h += '<div class="dr-exp"><b>解析</b>' + ex + '</div>';
     }
-    return h;
+    var mt = '<div class="dr-meta">' + qMeta(it) + '</div>';
+    return ps && !nosplit ? mt + '<div class="dr-split">' + ps + '<div class="dr-qp">' + h + '</div></div>' : mt + h;   /* 10/30：閱讀題文章框、題目框各自滑動 */
   }
 
   /* ⚡ 快速刷題／修復舊傷：一題一題，作答馬上對答案 */
@@ -212,14 +221,14 @@
       }
       var rs = done ? '<div class="dr-res ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '⭕ 答對了！' : '❌ 正確答案是 (' + esc(it.ans) + ')') + (msg ? '<small>' + msg + '</small>' : '') + '</div>' : '';
       var body = qBody(it, ans, done, run.el, run.i === 0);   /* 對錯放在選項下面、解析上面 */
-      body = body.indexOf('<div class="dr-exp">') >= 0 ? body.replace('<div class="dr-exp">', rs + '<div class="dr-exp">') : body + rs;
+      body = body.indexOf('<div class="dr-exp">') >= 0 ? body.replace('<div class="dr-exp">', rs + '<div class="dr-exp">') : /<\/div><\/div>$/.test(body) && body.indexOf('dr-split') >= 0 ? body.slice(0, -12) + rs + '</div></div>' : body + rs;
       open(mode === 'fix' ? '修復舊傷' : '⚡ 快速刷題', body,
         function (a, b) {
           var p = a.split('|');
           if (!run.pick && elTap(run.el, a, b)) { if (p[0] === 'el') show(true); return; }
           if (p[0] === 'pick' && !run.pick) {
             run.pick = p[1]; run.res.push({ id: 'q:' + it.id, ok: p[1] === it.ans ? 1 : 0 });
-            show();
+            show(!!document.querySelector('#dr .dr-split'));   /* 閱讀題：作答後文章框停在原處 */
             var r = document.querySelector('#dr .dr-res'); if (r && r.scrollIntoView) r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
           } else if (a === 'next') { run.i++; run.pick = ''; run.el = {}; if (run.i < list.length) show(); else end(); }
         },
@@ -291,7 +300,7 @@
           '<div class="dr-lab">逐題檢討（點題號看題目和解析）</div><div class="dr-rv">' + list.map(function (it, k) {
             var ok = run.ans[k] === it.ans;
             return '<div class="dr-rvi' + (openK === k ? ' open' : '') + '"><a data-a="rv|' + k + '" class="' + (ok ? 'ok' : 'ng') + '"><b>' + (k + 1) + '</b>' + (ok ? '⭕' : '❌') + '<span>你選 ' + (run.ans[k] ? '(' + esc(run.ans[k]) + ')' : '—') + '・答案 (' + esc(it.ans) + ')</span><i class="ti ti-chevron-down"></i></a>' +
-              (openK === k ? '<div class="dr-rvb">' + qBody(it, run.ans[k] || '', true, run.el[k]) + '</div>' : '') + '</div>';
+              (openK === k ? '<div class="dr-rvb">' + qBody(it, run.ans[k] || '', true, run.el[k], false, true) + '</div>' : '') + '</div>';
           }).join('') + '</div>',
           function (a) {
             var p = a.split('|');

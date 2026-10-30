@@ -189,6 +189,13 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
 .dr-psg{margin-bottom:12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
 .dr-psg summary{padding:9px 12px;font-size:14px;color:var(--muted);cursor:pointer}
 .dr-psg>div{padding:0 12px 12px;font-size:15.5px;line-height:1.85;font-family:"Noto Serif TC",serif}
+/* 10/30 閱讀題：文章框（上）、題目框（下）各自滑動 */
+.dr-bd.sp{display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+.dr-bd.sp>*{flex:none}
+.dr-bd.sp>.dr-split{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.dr-split>.dr-psg{flex:none;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.dr-split>.dr-psg>div{max-height:38vh;max-height:38dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.dr-split>.dr-qp{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:24px}
 .dr-g{border-bottom:1.5px dotted var(--gold);cursor:pointer}.dr-g span{display:none}.dr-g.show span{display:inline;margin-left:3px;font-size:13px;color:var(--gold)}
 .dr-fig{margin:0 0 10px;text-align:center}.dr-fig img{max-width:100%}.dr-fig figcaption{font-size:13px;color:var(--muted)}
 .dr-op{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;margin-bottom:8px;border-radius:13px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;line-height:1.6;cursor:pointer}
@@ -585,6 +592,6 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   load();
 })();
 </script>
-<script src="prac.js?v=20261029"></script>
+<script src="prac.js?v=20261030"></script>
 </body>
 </html>
