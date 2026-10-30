@@ -144,7 +144,8 @@
   }
 
   /* ════════ 刷個題牲龍活虎 ════════ */
-  var qsel = { les: null, src: null };
+  var qsel = { les: null, src: null, d: null };
+  var DIFF = [['易', '易'], ['中', '中'], ['難', '難']];   /* 10/30 難易度：出版社標記＋Claude 補標 */
   function qSetup(mode) {
     var B = myBank();
     if (!B.length) { open(mode === 'speed' ? '⏱ 練點速度' : '⚡ 快速刷題', '<div class="empty"><i class="ti ti-lock"></i>老師還沒開放這班的題目</div>', function () {}); return; }
@@ -152,17 +153,20 @@
     var R = (DD().src || []).filter(function (s) { return B.some(function (b) { return b.src === s[0]; }); });
     if (!qsel.les) { qsel.les = {}; L.forEach(function (l) { qsel.les[l[0]] = 1; }); }
     if (!qsel.src) { qsel.src = {}; R.forEach(function (s) { qsel.src[s[0]] = 1; }); }
-    function pool() { return B.filter(function (b) { return qsel.les[b.les] && qsel.src[b.src]; }); }
+    if (!qsel.d) qsel.d = { 易: 1, 中: 1, 難: 1 };
+    var hasD = B.some(function (b) { return b.d; });
+    function pool() { return B.filter(function (b) { return qsel.les[b.les] && qsel.src[b.src] && (!b.d || qsel.d[b.d]); }); }
     function draw() {
       var n = pool().length, N = mode === 'speed' ? Math.min(SPEED_N, n) : Math.min(10, n);
       var sec = mode === 'speed' ? Math.round(SPEED_SEC * N / SPEED_N) : 0;
       open(mode === 'speed' ? '⏱ 練點速度' : '⚡ 快速刷題',
         '<div class="dr-lab">範圍</div>' + chips('les', L.map(function (l) { return [l[0], l[1] + ' ' + l[0]]; }), qsel.les) +
         '<div class="dr-lab">題目來源</div>' + chips('src', R.map(function (s) { return [s[0], s[1]]; }), qsel.src) +
+        (hasD ? '<div class="dr-lab">難易度</div>' + chips('d', DIFF, qsel.d) : '') +
         '<p class="dr-mut">目前範圍共 ' + n + ' 題。' + (mode === 'speed' ? '抽 ' + N + ' 題、限時 ' + mmss(sec) + '，可以前後翻、改答案，交卷才對答案；時間到自動交卷。' : '抽 ' + N + ' 題，每答一題馬上看對錯和解析。') + '</p>',
         function (a) {
           var p = a.split('|');
-          if (p[0] === 'les' || p[0] === 'src') { var m = qsel[p[0]]; if (m[p[1]]) delete m[p[1]]; else m[p[1]] = 1; draw(); }
+          if (p[0] === 'les' || p[0] === 'src' || p[0] === 'd') { var m = qsel[p[0]]; if (m[p[1]]) delete m[p[1]]; else m[p[1]] = 1; draw(); }
           else if (a === 'go') {
             var list = shuffle(pool().slice()).slice(0, N);
             if (mode === 'speed') speedStart(list, sec, Object.keys(qsel.les).join('、'));
@@ -174,7 +178,7 @@
     draw();
   }
   function gloss(t) { return String(t || '').replace(/\{g:([^|]*)\|([^}]*)\}/g, '<span class="dr-g" data-a="g">$1<span>$2</span></span>'); }
-  function qMeta(it) { var e = book()['q:' + it.id]; return lno(it.les) + ' ' + it.les + '・' + it.sn + ' 第 ' + it.n + ' 題' + (e && !e.f ? '<span class="dr-tag">錯過 ' + e.w + ' 次</span>' : ''); }
+  function qMeta(it) { var e = book()['q:' + it.id]; return lno(it.les) + ' ' + it.les + '・' + it.sn + ' 第 ' + it.n + ' 題' + (it.d ? '・' + it.d : '') + (e && !e.f ? '<span class="dr-tag">錯過 ' + e.w + ' 次</span>' : ''); }
   /* 10/29 刪去法（同舊學霸網 10/12）：選項右邊「刪去／復原」，刪掉的變淡、不能直接作答；第一題題目下方提示；對完答案後刪過的淡一點 */
   var EL_TIP = '<p class="dr-tip">💡 不確定的選項可以先按「刪去」，刪錯了按「復原」</p>';
   function elTap(el, a, b) {   /* 點到刪去鈕／被刪的選項：回傳 true＝已處理（不算作答） */
