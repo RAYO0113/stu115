@@ -75,14 +75,15 @@
 
   /* ── 練習頁上的兩張卡片 ── */
   function cards() {
-    var nq = openIds('q').length, pv = S.me().preview;
+    var nq = openIds('q').length, nn = nOpen().length, pv = S.me().preview;
     return '<div class="sec"><h2>刷個題牲龍活虎</h2><span>A卷・課本後習題・習作</span></div><div class="cd fade pk">' +
       '<a class="pkb" data-pk="quick"><i class="ti ti-bolt"></i><b>快速刷題</b><span>零碎時間，10 題馬上對答案</span></a>' +
       '<a class="pkb" data-pk="speed"><i class="ti ti-stopwatch"></i><b>練點速度</b><span>仿 A 卷 ' + SPEED_N + ' 題 ' + (SPEED_SEC / 60) + ' 分鐘</span></a>' +
       '<a class="pkb" data-pk="fix"><i class="ti ti-bandage"></i><b>修復舊傷' + (nq ? '<em>' + nq + '</em>' : '') + '</b><span>' + (nq ? '錯過的 ' + nq + ' 題，連對 ' + PASS + ' 次就修好' : '目前沒有舊傷') + '</span></a></div>' +
-      '<div class="sec"><h2>考注釋牲淚俱下</h2><span>課本注釋</span></div><div class="cd fade pk pk2">' +
+      '<div class="sec"><h2>考注釋牲淚俱下</h2><span>課本注釋</span></div><div class="cd fade pk">' +
       '<a class="pkb" data-pk="nmem"><i class="ti ti-book"></i><b>背書模式</b><span>先背，點一下看解釋</span></a>' +
-      '<a class="pkb" data-pk="nquiz"><i class="ti ti-pencil-question"></i><b>刷題模式</b><span>抽考，考完自動訂正</span></a></div>' +
+      '<a class="pkb" data-pk="nquiz"><i class="ti ti-pencil-question"></i><b>刷題模式</b><span>抽考，考完自動訂正</span></a>' +
+      '<a class="pkb" data-pk="nbook"><i class="ti ti-notebook"></i><b>注釋錯題' + (nn ? '<em>' + nn + '</em>' : '') + '</b><span>' + (nn ? '錯過的 ' + nn + ' 條，連對 ' + PASS + ' 次就修好' : '目前沒有錯的') + '</span></a></div>' +
       (pv ? '<p class="note">老師預覽：可以試做，但練習結果不會記錄。</p>' : '<p class="note">答錯的題目會記下來（老師看得到），之後連續答對 ' + PASS + ' 次就算修好。</p>');
   }
   var host = null;
@@ -97,6 +98,7 @@
         if (k === 'quick' || k === 'speed') qSetup(k);
         else if (k === 'fix') qFix();
         else if (k === 'nmem' || k === 'nquiz') nSetup(k);
+        else if (k === 'nbook') nBook();
       });
     });
   }
@@ -456,6 +458,14 @@
       }
     }
     show();
+  }
+  /* 11/2 注釋錯題本（老師）：刷題模式／小考訂正答錯、還沒連對 PASS 次的注釋 → 攤開答案 → 重考 */
+  function nOpen() { return DD() && DD().notes ? openIds('n').map(cardById).filter(Boolean) : openIds('n'); }   /* 題庫還沒載入時先用 id 數 */
+  function nBook() {
+    var list = nOpen(), order = (DD().les || []).map(function (l) { return l[0]; });
+    if (!list.length) { open('注釋錯題', '<div class="empty"><i class="ti ti-heart-check"></i>目前沒有錯的注釋，先去刷題吧！</div>', function () { close(); }, { foot: '<a class="dr-btn" data-a="home">回練習</a>' }); return; }
+    list.sort(function (x, y) { return x.les === y.les ? x.no - y.no : order.indexOf(x.les) - order.indexOf(y.les); });
+    nFix(list, '注釋錯題', false);
   }
   /* 訂正模式：先看錯的（答案都攤開）→ 重考錯的 → 還有錯就再訂正，直到全對 */
   function nFix(list, les, fromQuiz, round) {
