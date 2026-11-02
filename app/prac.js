@@ -341,15 +341,20 @@
     var at = it.p >= 0 && it.s.substr(it.p, it.w.length) === it.w ? it.p : it.s.indexOf(it.w);
     return { id: 'n:' + x.les + '|' + it.no + '|' + it.w, les: x.les, no: it.no, s: it.s, w: it.w, a: at, b: at < 0 ? -1 : at + it.w.length, ans: it.a };
   }
+  function noteKey(les) {   /* 課名對到題庫：完整課名直接用；只有「—」前半（例如「論語選」）就找開頭相同的那課 */
+    les = String(les || ''); if (DD().notes[les]) return les;
+    var k = Object.keys(DD().notes).filter(function (x) { return x.split('—')[0] === les.split('—')[0]; })[0];
+    return k || les;
+  }
   function cardById(id) {
     var m = /^n:(.*)\|(\d+)\|(.*)$/.exec(id); if (!m) return null;
-    var list = DD().notes[m[1]] || [];
+    var lk = noteKey(m[1]), list = DD().notes[lk] || [];
     for (var i = 0; i < list.length; i++) {
       var it = list[i]; if (it.no !== +m[2]) continue;
-      if (it.w === m[3] && !it.v) return nCard({ les: m[1], it: it }, false);
+      if (it.w === m[3] && !it.v) return nCard({ les: lk, it: it }, false);
       var c = (it.v || []).filter(function (v) { return v[0] === m[3]; })[0];
-      if (c) return { id: id, les: m[1], no: it.no, s: it.s, w: c[0], a: c[1], b: c[2], ans: c[3] };
-      if (it.w === m[3]) return nCard({ les: m[1], it: it }, false);
+      if (c) return { id: id, les: lk, no: it.no, s: it.s, w: c[0], a: c[1], b: c[2], ans: c[3] };
+      if (it.w === m[3]) return nCard({ les: lk, it: it }, false);
     }
     return null;
   }
@@ -547,7 +552,7 @@
   /* 小考紀錄 → 訂正重考：只考這次考卷上的題目，錯的進訂正，重考到全對 */
   function quizFix(r) {
     need(function () {
-      var les = String(r.lesson || '').split('—')[0], name = '〈' + les + '〉' + (r.code ? r.code + ' ' : '') + '註' + r.a + '～' + r.b;
+      var les = noteKey(r.lesson), name = '〈' + les.split('—')[0] + '〉' + (r.code ? r.code + ' ' : '') + '註' + r.a + '～' + r.b;   /* 11/2：id 用完整課名（「論語選—子路…」），注釋錯題才找得到 */
       var list = (r.qs || []).filter(function (q) { return q.w && q.a; }).map(function (q) {
         var s = q.x || q.s || '', at = s.indexOf(q.w);
         return { id: 'n:' + les + '|' + q.no + '|' + q.w, les: les, no: q.no, s: s, w: q.w, a: at, b: at < 0 ? -1 : at + q.w.length, ans: esc(q.a) };
