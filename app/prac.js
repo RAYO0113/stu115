@@ -361,7 +361,7 @@
   function nSetup(mode) {
     nq = null;
     var L = noteLessons();
-    if (!nsel.les || !DD().notes[nsel.les]) nsel.les = L[L.length - 1][0];
+    if (!nsel.les || !DD().notes[nsel.les]) nsel.les = nNow() || L[L.length - 1][0];
     function draw() {
       var ns = nos(nsel.les);
       if (ns.indexOf(nsel.a) < 0) nsel.a = ns[0];
@@ -386,6 +386,14 @@
       B.onchange = function () { nsel.b = +B.value; if (nsel.a > nsel.b) nsel.a = nsel.b; draw(); };
     }
     draw();
+  }
+  /* 11/2 老師：預設課跟著上課進度走＝老師日曆到兩週後為止出現的最大課次（日曆課次 1～10 同 DD().les 順序），最少從 DD().nFrom 課開始 */
+  function nNow() {
+    var d = S.data() || {}, t = new Date(Date.now() + 14 * 864e5), lim = t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2);
+    var n = +DD().nFrom || 0;
+    (d.cal || []).forEach(function (e) { if (e.date && e.date <= lim) (e.lessons || []).forEach(function (x) { if (+x > n) n = +x; }); });
+    for (; n > 0; n--) if (lesKey(n)) return lesKey(n);   /* 沒有注釋的課（例如下一冊）往前找 */
+    return '';
   }
   function rangeLabel() { return nsel.les + ' 註' + nsel.a + '～' + nsel.b; }
   function inRange() { return nItems(nsel.les).filter(function (x) { return x.it.no >= nsel.a && x.it.no <= nsel.b && !(nq && nq.ex[nKey(x.it)]); }); }   /* 老師點「不考」的不列 */
