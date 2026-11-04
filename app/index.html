@@ -502,11 +502,11 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var QZ_FROM = '2026-10-18';
     var rec = (D.quiz || []).filter(function (r) { return r.at && ymd(new Date(r.at)) >= QZ_FROM; }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
     h += '<div class="sec"><h2>小考與訂正</h2><span>點一下看題目和答案</span></div><div class="cd fade" id="qz-list">' + (rec.length ? rec.map(function (r, i) {
-      var d = r.at ? ymd(new Date(r.at)) : '';
+      var d = r.at ? ymd(new Date(r.at)) : '', t13 = isT13(r);   /* 11/4：十三經小考 */
       return '<div class="qzr' + (i === 0 && d === td ? ' open' : '') + '"><div class="it" data-qz="1"><div class="ic k"><i class="ti ti-list-check"></i></div><div class="tx"><b>' +
-        (r.code ? esc(r.code) + ' ' : '') + '〈' + esc(String(r.lesson || '').split('—')[0]) + '〉註釋小考' + (d === td ? '<span class="new">今天</span>' : '') + '</b><span>' +
-        (d ? md(d) + '・' : '') + '註' + esc(r.a) + '～註' + esc(r.b) + '・' + r.qs.length + ' 題</span></div><i class="ti ti-chevron-right chev"></i></div>' +
-        '<div class="qzd">' + quizBody(r) + (window.STUPRAC ? '<a class="qzbtn" data-qf="' + i + '"><i class="ti ti-refresh"></i>訂正重考（' + r.qs.length + ' 題）</a>' : '') + '</div></div>';   /* 10/21：考完這筆就是訂正，錯的重考到全對 */
+        (r.code ? esc(r.code) + ' ' : '') + '〈' + esc(String(r.lesson || '').split('—')[0]) + '〉' + (t13 ? '十三經小考' : '註釋小考') + (d === td ? '<span class="new">今天</span>' : '') + '</b><span>' +
+        (d ? md(d) + '・' : '') + (t13 ? '' : '註' + esc(r.a) + '～註' + esc(r.b) + '・') + r.qs.length + ' 題</span></div><i class="ti ti-chevron-right chev"></i></div>' +
+        '<div class="qzd">' + quizBody(r) + (window.STUPRAC && !t13 ? '<a class="qzbtn" data-qf="' + i + '"><i class="ti ti-refresh"></i>訂正重考（' + r.qs.length + ' 題）</a>' : '') + '</div></div>';   /* 10/21：考完這筆就是訂正，錯的重考到全對 */
     }).join('') : '<div class="empty"><i class="ti ti-list-check"></i>還沒有小考紀錄<br>老師記錄小考後，題目和答案會出現在這裡，方便訂正</div>') + '</div>';
     h += '<div style="height:20px"></div>';
     /* 10/20：兩個練習區（prac.js）放在小考上面 */
@@ -520,6 +520,9 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     if ($('qz-mem')) $('qz-mem').onclick = function () { STUPRAC.memRange(quiz.lessons[0], quiz.quiz.a, quiz.quiz.b, quiz.quiz, quiz.item); };   /* 10/22：整個 quiz（必考／不考／選題／小字詞） */
     $('prac').querySelectorAll('[data-qm]').forEach(function (el) { el.onclick = function () { var e = qs[+el.getAttribute('data-qm')]; STUPRAC.memRange(e.lessons[0], e.quiz.a, e.quiz.b, e.quiz, e.item); }; });
   }
+  /* 11/4：十三經小考（RayOclass V211）——後台只傳固定欄位，靠「每題原句＝十三經全名單」認出 */
+  var T13 = '詩經、尚書、周禮、儀禮、禮記、周易、左傳、公羊傳、穀梁傳、論語、孝經、爾雅、孟子';
+  function isT13(r) { return !!(r && r.qs && r.qs.length && r.qs.every(function (q) { return q.s === T13; })); }
   function quizMark(s, w) { var i = s && w ? s.indexOf(w) : -1; return i < 0 ? esc(s || '') : esc(s.slice(0, i)) + '<mark>' + esc(w) + '</mark>' + esc(s.slice(i + w.length)); }
   function quizBody(r) {
     var ct = (r.corr || []).filter(function (c) { return c && c.s !== '' && c.s != null; }).map(function (c) {
@@ -527,6 +530,9 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     }).join('；');
     /* 訂正要抄什麼：每題 cp 優先，否則整張 copy（x 考卷句／s 完整原句／w 只抄詞）；題號照考卷 ord */
     var qs = (r.qs || []).every(function (q) { return q.ord; }) ? r.qs.slice().sort(function (x, y) { return x.ord - y.ord; }) : (r.qs || []);
+    if (isT13(r)) return '<div class="cr">✏️ 訂正規則：' + (ct ? esc(ct) : '老師還沒有設定') + '</div>' +   /* 11/4：十三經小考——答案不分順序，訂正十三經全抄 */
+      '<ol>' + qs.map(function (q) { return '<li><span class="s">《' + esc(q.w) + '》</span><span class="cpk">答案不分順序</span></li>'; }).join('') + '</ol>' +
+      '<div class="cr">✏️ 訂正要抄：十三經全抄（照順序）<br><b>' + T13.split('、').map(function (b) { return '《' + esc(b) + '》'; }).join('') + '</b></div>';
     return '<div class="cr">✏️ 訂正規則：' + (ct ? esc(ct) : '老師還沒有設定') + '</div><ol>' + qs.map(function (q) {
       var cp = q.cp || r.copy || 'x', w = q.whole ? '' : q.w, body;
       if (cp === 'w' && w) body = '<span class="s">' + esc(w) + '</span>';
