@@ -6,6 +6,16 @@
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="theme-color" content="#2a1d10">
 <title>我要當學霸</title>
+<script>
+/* 11/5 老師：從 LINE 點開時，LINE 內建瀏覽器常常圖片載不出來（速刷文字雲題）→ 改用手機預設瀏覽器（Safari／Chrome）開。
+   做法：網址加 openExternalBrowser=1（LINE 官方支援的參數），LINE 會改用外部瀏覽器開；已經有這個參數就不再轉，避免繞圈。#後面（含登入通行證）原樣帶過去。 */
+(function () {
+  try {
+    if (!/\bLine\//i.test(navigator.userAgent) || /[?&]openExternalBrowser=1/.test(location.search)) return;
+    location.replace(location.pathname + (location.search ? location.search + '&' : '?') + 'openExternalBrowser=1' + location.hash);
+  } catch (e) {}
+})();
+</script>
 <!-- 新班級網頁（2026-10-16 起，手機優先）。
      登入：學校帳號 → 成績系統 Apps Script「學校帳號部署」?page=auth 發通行證 → 回到本頁 #t=通行證（立刻從網址列清掉，存 localStorage stuapp_t_v1）。
      資料：帳密部署 action 'meGet'＋通行證，後台只回本人（成績、缺交、扣分、班平均、班級日曆、小考）。
