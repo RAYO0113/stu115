@@ -153,7 +153,7 @@
     if (!B.length) { open(mode === 'speed' ? '⏱ 練點速度' : '⚡ 快速刷題', '<div class="empty"><i class="ti ti-lock"></i>老師還沒開放這班的題目</div>', function () {}); return; }
     var L = (DD().les || []).filter(function (l) { return B.some(function (b) { return b.les === l[0]; }); });
     var R = (DD().src || []).filter(function (s) { return B.some(function (b) { return b.src === s[0]; }); });
-    if (!qsel.les) { qsel.les = {}; L.forEach(function (l) { qsel.les[l[0]] = 1; }); }
+    if (!qsel.les) qsel.les = {};   /* 11/11 老師：範圍預設一課都不選，讓學生自己點（來源、難易度仍預設全選） */
     if (!qsel.src) { qsel.src = {}; R.forEach(function (s) { qsel.src[s[0]] = 1; }); }
     if (!qsel.d) qsel.d = { 易: 1, 中: 1, 難: 1 };
     var hasD = B.some(function (b) { return b.d; });
@@ -165,7 +165,7 @@
         '<div class="dr-lab">範圍</div>' + chips('les', L.map(function (l) { return [l[0], l[1] + ' ' + l[0]]; }), qsel.les) +
         '<div class="dr-lab">題目來源</div>' + chips('src', R.map(function (s) { return [s[0], s[1]]; }), qsel.src) +
         (hasD ? '<div class="dr-lab">難易度</div>' + chips('d', DIFF, qsel.d) : '') +
-        '<p class="dr-mut">目前範圍共 ' + n + ' 題。' + (mode === 'speed' ? '抽 ' + N + ' 題、限時 ' + mmss(sec) + '，可以前後翻、改答案，交卷才對答案；時間到自動交卷。' : '抽 ' + N + ' 題，每答一題馬上看對錯和解析。') + '</p>',
+        '<p class="dr-mut">' + (Object.keys(qsel.les).length ? '' : '👆 先點上面要刷哪幾課。') + '目前範圍共 ' + n + ' 題。' + (mode === 'speed' ? '抽 ' + N + ' 題、限時 ' + mmss(sec) + '，可以前後翻、改答案，交卷才對答案；時間到自動交卷。' : '抽 ' + N + ' 題，每答一題馬上看對錯和解析。') + '</p>',
         function (a) {
           var p = a.split('|');
           if (p[0] === 'les' || p[0] === 'src' || p[0] === 'd') { var m = qsel[p[0]]; if (m[p[1]]) delete m[p[1]]; else m[p[1]] = 1; draw(); }
