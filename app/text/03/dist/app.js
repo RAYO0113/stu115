@@ -5990,14 +5990,16 @@ try {
 (function () {
   var VER = '20261028c';
   /* V164（老師 10/27）：分科——冷凍空調科、建築科各一套，例子都換成該科的 */
-  var LIST = [['cold-full', '冷凍空調科（完整版）'], ['cold-short', '冷凍空調科（一節課）'],
+  var LIST_ALL = [['cold-full', '冷凍空調科（完整版）'], ['cold-short', '冷凍空調科（一節課）'],
               ['arch-full', '建築科（完整版）'], ['arch-short', '建築科（一節課）']];
+  /* 學生版：科別來自 nav.js（班級網頁存的 stuapp_cls_v1 → STU_DEPT 'cold'／'arch'），不明時兩科完整版都列 */
+  var LIST = LIST_ALL.filter(function (d) { return /-full$/.test(d[0]) && (!window.STU_DEPT || d[0].indexOf(window.STU_DEPT) === 0); });
   var st = { on: false, deck: null, idx: 0, step: 0 };
 
   function load(cb) {
     if (window.ZW_DECKS) return cb();
     var s = document.createElement('script');
-    s.src = 'data/zuowen/decks.js?v=' + VER;
+    s.src = '../../zuowen/decks.js?v=' + VER;
     s.onload = cb;
     s.onerror = function () { alert('作文教學資料載入失敗，請重新整理再試一次。'); };
     document.head.appendChild(s);

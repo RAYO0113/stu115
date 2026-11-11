@@ -6135,6 +6135,27 @@ body.dark-mode .tm-sup { color:#C9A8F0; }
 #wk-fullscreen .t13-cap { font-size:calc(var(--base-size) * 1.6); }
 body.dark-mode .t13 { --t13-c:#e0b070; --t13-add:#e8735f; --t13-split:#7fb2ee; }
 body.dark-mode .t13-sum { background:var(--mk-paper-warm,#221d18); }
+/* V192：書名依時代改名（先劃掉舊名，再換新名並標「改名」） */
+.t13-b.ren-old .t13-bn { text-decoration: line-through; text-decoration-color: var(--t13-add); text-decoration-thickness: .1em; color: #999; }
+.t13-b.ren { border-color: #7c4da0; color: #7c4da0; box-shadow: 0 0 0 3px rgba(124,77,160,.18); }
+.t13-b.ren::before { content: "改名"; position: absolute; top: -.95em; left: 50%; transform: translateX(-50%); font-size: .42em; font-weight: 700; color: #fff;
+  background: #7c4da0; border-radius: .4em; padding: 0 .4em; line-height: 1.5; opacity: 1; white-space: nowrap; }
+.t13-b.ren .t13-bn::before { content: "《"; opacity: .45; }
+.t13-stage { padding-top: .5em; }
+.t13-ren { margin: 0 0 .5em; }
+.t13-ren-i { font-size: calc(var(--base-size) * 1.1); line-height: 1.7; color: var(--mk-ink, #33271a); margin: .15em 0; }
+.t13-ren-i b { color: #7c4da0; margin-right: .4em; }
+.t13-ren-i .t13-ren-tag { display: inline-block; padding: 0 .45em; border-radius: .35em; background: #7c4da0; color: #fff; font-size: .85em; }
+#wk-fullscreen .t13-ren-i { font-size: calc(var(--base-size) * 1.3); }
+body.dark-mode .t13-b.ren { border-color: #c8a2e8; color: #c8a2e8; }
+body.dark-mode .t13-ren-i b { color: #c8a2e8; }
+body.dark-mode .t13-ren-i .t13-ren-tag { background: #7c4da0; color: #fff; }
+/* V193：《爾雅》簡介（十二經那一步） */
+.t13-info { margin: 0 0 .5em; padding: .45em .8em; border-radius: .5em; background: rgba(192,57,43,.07); border-left: 5px solid var(--t13-add);
+  font-size: calc(var(--base-size) * 1.1); line-height: 1.75; color: var(--mk-ink, #33271a); }
+.t13-info-tag { color: var(--t13-add); margin-right: .4em; }
+#wk-fullscreen .t13-info { font-size: calc(var(--base-size) * 1.25); }
+body.dark-mode .t13-info { background: rgba(232,115,95,.12); }
 /* ════ src/css/149_guide-css.css ════ */
 /* V126 追問引導（148_guide-js）：提問裡一題一題追問，點一下看答案並出現下一問；全部問完出現「小結論」（學生抄）。
    資料是 ask 陣列裡的 HTML：.gd > .gd-q（主問題）＋ .gd-s×N（追問，.gd-sq 問／.gd-sa 答）＋ .gd-end（小結論）＋ .gd-all（全部展開） */
@@ -6508,3 +6529,437 @@ body.v137-fs #wk-ink-layer:not(.active), body.v137-fs #wk-ink-layer:not(.active)
 /* 深色模式 */
 body.dark-mode .au-pop .au-frame{
   background:linear-gradient(160deg, #3d5a36 0%, #2c4427 100%); border-color:#6f9a60; }
+/* ════ src/css/162_zuowen-css.css ════ */
+/* V162 作文教學投影片（老師 10/27）：1920×1080 的投影片整張等比縮放進課文區／全螢幕。
+   投影片內的樣式全部寫在行內；這裡先把網站本身對 p、h2… 的樣式還原掉，免得干擾。 */
+.zw-slide { padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; min-height: 0 !important; }
+.zw-stage { position: relative; width: 100%; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 18px rgba(0, 0, 0, .18); margin: 0 auto; }
+.zw-stage > section { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; box-sizing: border-box; overflow: hidden; }
+.zw-stage section *:not(svg):not(svg *) { all: revert; margin: 0 !important; box-sizing: border-box; }
+.zw-stage section p { line-height: 1.4; }
+.zw-stage section h1 { font-weight: 600; line-height: 1.1; }
+.zw-stage section h2 { font-weight: 600; line-height: 1.15; }
+.zw-stage section h3 { font-weight: 600; line-height: 1.2; }
+.zw-stage x-shape { display: block; flex: none; }
+.zw-stage x-shape[kind="arrow-right"] { clip-path: polygon(0 30%, 60% 30%, 60% 0, 100% 50%, 60% 100%, 60% 70%, 0 70%); }
+.zw-stage [data-zw-o] { transition: opacity .35s ease, transform .35s ease; }
+.zw-stage .zw-hidden { opacity: 0 !important; transform: translateY(24px); }
+#wkfs-body .zw-slide { display: flex; align-items: center; justify-content: center; height: 100%; }
+#wkfs-body .zw-stage { border-radius: 0; box-shadow: none; }
+/* ════ src/css/163_v178-compact-css.css ════ */
+/* V178：老師 10/28「標籤離句子太遠、翻譯的格子也太大」
+   ① 新標示的課（.tm-on）行距 3.1 → 2.5，〔修〕〔句意〕標籤縮小並貼近文字（字級、位移在 140_textmark-js.js）
+   ② 每行的「翻譯」等按鈕縮小、不再撐滿一欄，按鈕列上下留白縮小（所有課） */
+#wk-fullscreen .tm-on .tp-text, #wk-slide-area .tm-on .tp-text { line-height:2.5 !important; }
+.tp-lbtns .tp-lb, .tp-style-before > .tp-lb { font-size:13px !important; line-height:1.3 !important; min-height:0 !important; padding:3px 10px !important; width:auto !important; }
+.tp-lbtns { min-width:0 !important; margin-top:0 !important; }
+.tp-line > .tp-extra { margin-top:2px !important; margin-bottom:2px !important; }
+/* ③ 段落下方的說明／統整框：上方留出一個〔句意〕說明框的高度，避免最後一行的句意框蓋到標題；只有一項時不顯示「1.」 */
+.tm-on .tp-body > .tp-sumbox { margin-top:2.6em !important; }
+.tp-sumbox .tp-askl > li:only-child { list-style:none; }
+/* ④ 段落說明框裡的表格（如〈長干行〉示現說明）：第一欄「類型」不換行（全站表格規則會強制換行，這裡要更具體才蓋得過） */
+.wk-slide-area .tp-sumbox table td:first-child, .wk-slide-area .tp-sumbox table th:first-child,
+#wk-fullscreen .tp-sumbox table td:first-child, #wk-fullscreen .tp-sumbox table th:first-child { white-space:nowrap !important; }
+/* ⑤ 資料裡標 class="nw" 的表格格子不換行（全站表格規則強制換行，要更具體才蓋得過） */
+.wk-slide-area td.nw, .wk-slide-area th.nw, #wk-fullscreen td.nw, #wk-fullscreen th.nw { white-space:nowrap !important; }
+/* ════ src/css/165_ao-img-css.css ════ */
+/* 答案總覽：答案在圖上的大題（173_ao-img-js.js） */
+.wk-ao-chip.ao-img { display:block; width:fit-content; max-width:100%; margin:6px 0 2px; padding:6px; white-space:normal; }
+.wk-ao-chip.ao-img > span { display:block; }
+.wk-ao-chip.ao-img img { margin:0 !important; }
+.v68-ao-hidden .wk-ao-chip.ao-img:not(.v68-show) > span { min-width:12em; min-height:2.2em; }
+.v68-ao-hidden .wk-ao-chip.ao-img:not(.v68-show) img { visibility:hidden; height:0; }
+.v68-ao-hidden .wk-ao-chip.ao-img:not(.v68-show) > span::after { content:"？ 點一下顯示車票答案"; }
+/* ════ src/css/166_v185-same-size-css.css ════ */
+/* V185：補充頁、補充講義的「原文框」和旁邊的解釋文字一樣大，改用顏色區分（老師 11/2：字體大小由老師自己用 A−／A＋ 控制，不要用大小字區別）。
+   原文框：跟著所在段落的字級（1em），字色用該頁的補充色（作者紅、題解紫、課後補充綠、賞析藍）；補充浮框在全螢幕也跟內文同大。 */
+.sp-anc,
+#wk-fullscreen .sp-anc {   /* 〈盍各言爾志〉（.hg-m）原文、語譯本來就同大，157 的規則較具體，照舊 */
+  font-size: 1em !important;
+  color: var(--sp-color, #7c4da0);
+}
+.hd-anc { font-size: 1em; color: #7c4da0; }
+#wk-fullscreen .sp-box { font-size: 1em; }
+body.dark-mode .sp-anc { color: color-mix(in srgb, var(--sp-color, #7c4da0) 55%, #fff); }
+body.dark-mode .hd-anc { color: color-mix(in srgb, #7c4da0 55%, #fff); }
+
+/* V186：〈論語選〉弟子小檔案的人名小標題：改成有底色的標籤（字級不變，用顏色區分；老師 11/2「小標題換個顏色」） */
+.wks-info-body b.dz-h {
+  display: inline-block; padding: .08em .7em; margin: .2em 0 .25em; border-radius: 4px;
+  background: var(--sp-color, #2d7a4f); color: #fff; letter-spacing: .08em;
+}
+body.dark-mode .wks-info-body b.dz-h { background: color-mix(in srgb, var(--sp-color, #2d7a4f) 75%, #000); color: #fff; }
+
+/* V186：〈論語選〉延伸·孔子之為人（一）～（三）統一格式：每則原文框＋「顯示語譯」（語譯與內文同大）＋說明 */
+.wks-info-body .sp-anc + .sp-trans-toggle { margin-top: -6px; }
+.sp-trans-body { font-size: 1em; }
+.wks-info-body .kz-note { color: var(--sp-color, #2d7a4f); margin: 6px 0 2px; }
+
+/* V187：〈論語選〉整課內文字級統一（老師 11/2：整課含補充講義都統一，大小標題可以不同；字級由 A−／A＋ 控制）。
+   作法：課文頁以外的每一頁，整頁內文＝全螢幕「學生閱讀字級」(--student-read-size，跟著 A−／A＋)、一般畫面＝基本字級 1.2 倍；
+   頁內所有內文元素跟著頁面字級（inherit），只有標題、標籤、按鈕、提示、注音等不跟。課文頁原本就統一，只把「提問」框拉成同大。
+   body[data-wk] 由 175_v187-lesson-attr-js.js 設定。 */
+body[data-wk="論語選—子路曾皙冉有公西華侍坐"] #wkfs-body .wk-slide:not(.wks-textpage, .wks-cover, .t13-slide) { font-size: var(--student-read-size) !important; }
+body[data-wk="論語選—子路曾皙冉有公西華侍坐"] #wk-slide-area .wk-slide:not(.wks-textpage, .wks-cover, .t13-slide) { font-size: calc(var(--base-size) * 1.2) !important; }
+body[data-wk="論語選—子路曾皙冉有公西華侍坐"] :is(#wkfs-body, #wk-slide-area) .wk-slide:not(.wks-textpage, .wks-cover, .t13-slide)
+  *:not(h1, h2, h3, h4, h5, h6, button, summary, input, select, option, svg, svg *, rt, img,
+        [class*="head"], [class*="title"], [class*="badge"], [class*="-tag"], [class*="topbar"], [class*="book-page"], [class*="hint"], [class*="cov"],
+        [class*="v68-"], [class*="v61-"], .hd-mj, .hd-sub, .hd-page, .sec-mark, .sp-h, .dz-h, .au-cap, .sp-anno-mark, .sp-anno,
+        .tp-nn, .tp-gd, .jy-cir, .zy-ind, .ah-k, .gd-ek, .tp-pk, .hg-mk, .wk-appk, .aq-psgh, .tp-side-h, .tp-page, .mm-k, .mm-c) {
+  font-size: inherit !important;
+}
+body[data-wk="論語選—子路曾皙冉有公西華侍坐"] #wkfs-body .wks-textpage :is(.gd-q, .gd-sq) { font-size: var(--student-read-size) !important; }
+/* ════ src/css/167_v190-kzlife-css.css ════ */
+/* V190：〈論語選〉「孔子的一生」地圖動畫（176_v190-kzlife-js）。內文跟著頁面字級（V187 規則），標題類用 class 名含 head／title／hint 排除。 */
+.kzl { --kzl-c: var(--sp-color, #b03a2e); --kzl-red: #d0312d; margin-top: .2em; }
+.kzl-tl { display: flex; flex-wrap: wrap; gap: .25em .7em; align-items: flex-end; margin-bottom: .5em; }
+.kzl-grp { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .2em; padding: .15em .3em .25em; border-radius: .5em; background: var(--mk-paper-warm, #f7f2e6); }
+.kzl-grp-head { font-style: normal; font-size: 15px; color: var(--mk-ink-soft, #6b5a42); margin-right: .2em; }
+.kzl-tb { font-family: inherit; font-size: 15px; line-height: 1.2; padding: .3em .55em; min-width: 2.2em; border: 1.5px solid var(--mk-line, #e2d6bd);
+  border-radius: .5em; background: var(--surface, #fffdf8); color: var(--mk-ink-soft, #6b5a42); cursor: pointer; }
+.kzl-tb.zy { min-width: 1.9em; padding: .3em .35em; }
+.kzl-tb.done { border-color: var(--kzl-c); color: var(--kzl-c); }
+.kzl-tb.cur { background: var(--kzl-c); border-color: var(--kzl-c); color: #fff; font-weight: 700; }
+
+.kzl-main { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: .9em; align-items: start; }
+.kzl-mapbox { position: relative; }
+.kzl-map { display: block; width: 100%; height: auto; }
+.kzl-bg { fill: #f5ecd8; stroke: #d9c7a3; stroke-width: 2; }
+.kzl-compass { font-size: 22px; fill: #8a7a5e; font-family: "Noto Serif TC", serif; }
+.kzl-compass-a { fill: #8a7a5e; }
+.kzl-pl circle { fill: #fff; stroke: #9a8a6e; stroke-width: 2; }
+.kzl-pl text { font-size: 28px; font-weight: 700; fill: #9a8a6e; font-family: "Noto Serif TC", serif; paint-order: stroke; stroke: #f5ecd8; stroke-width: 5px; }
+.kzl-pl.sm text { font-size: 22px; font-weight: 400; }
+.kzl-pl.on circle { stroke: var(--kzl-red); }
+.kzl-pl.on text { fill: #5a3e22; }
+.kzl-pl.here text { fill: var(--kzl-red); }
+.kzl-trail polyline { fill: none; stroke: var(--kzl-red); stroke-opacity: .28; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.kzl-cur { fill: none; stroke: var(--kzl-red); stroke-width: 4; stroke-dasharray: 9 6; stroke-linejoin: round; stroke-linecap: round; }
+.kzl-dot circle { fill: var(--kzl-red); stroke: #fff; stroke-width: 2.5; }
+.kzl-dot .kzl-halo { fill: var(--kzl-red); stroke: none; opacity: .25; transform-origin: 0 0; animation: kzl-pulse 1.6s ease-out infinite; }
+@keyframes kzl-pulse { 0% { transform: scale(.55); opacity: .45; } 100% { transform: scale(1.5); opacity: 0; } }
+
+.kzl-side { line-height: 1.75; }
+.kzl-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .6em; font-size: 1em; margin-bottom: .1em; }
+.kzl-age { color: var(--kzl-red); font-size: 1.15em; }
+.kzl-yr { color: var(--mk-ink-soft, #6b5a42); font-size: .8em; }
+.kzl-title { font-size: 1.05em; font-weight: 900; color: var(--kzl-c); border-bottom: 2px solid color-mix(in srgb, var(--kzl-c) 35%, transparent); padding-bottom: .15em; margin-bottom: .3em; }
+.kzl-txt b { color: var(--kzl-c); }
+.kzl-q { color: #7c4da0; }
+
+.kzl-ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: .5em; margin-top: .6em; }
+.kzl-btn { font-family: inherit; font-size: 16px; padding: .35em .9em; border-radius: .5em; border: 1.5px solid var(--kzl-c); background: var(--surface, #fffdf8);
+  color: var(--kzl-c); cursor: pointer; }
+.kzl-btn.kzl-next { background: var(--kzl-c); color: #fff; }
+.kzl-btn:disabled { opacity: .35; cursor: default; }
+.kzl-hint-ind { font-size: 15px; color: var(--mk-ink-soft, #6b5a42); }
+
+#wk-fullscreen .kzl-tb, #wk-fullscreen .kzl-grp-head, #wk-fullscreen .kzl-hint-ind { font-size: 17px; }
+#wk-fullscreen .kzl-btn { font-size: 18px; }
+#wk-fullscreen .kzl-main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+@media (max-width: 760px) { .kzl-main { grid-template-columns: 1fr; } }
+
+body.dark-mode .kzl { --kzl-red: #ff6b5e; }
+body.dark-mode .kzl-bg { fill: #2a241c; stroke: #5a4a33; }
+body.dark-mode .kzl-pl circle { fill: #2a241c; }
+body.dark-mode .kzl-pl text { stroke: #2a241c; fill: #8f8270; }
+body.dark-mode .kzl-pl.on text { fill: #e8d9bd; }
+body.dark-mode .kzl-pl.here text { fill: var(--kzl-red); }
+body.dark-mode .kzl-q { color: #c8a2e8; }
+body.dark-mode .kzl-grp { background: #221d18; }
+
+/* V191：〈論語選〉作者·補充｜儒家（字級跟內文一樣，用顏色區分） */
+.wks-info-body .rj-k { color: var(--sp-color, #b03a2e); }
+.rj-evo, .rj-flow { display: flex; flex-wrap: wrap; align-items: center; gap: .4em; margin: .3em 0 .5em; }
+.rj-step, .rj-f { display: inline-flex; flex-direction: column; align-items: center; padding: .25em .9em; border: 2px solid var(--sp-color, #b03a2e);
+  border-radius: .5em; background: var(--surface, #fffdf8); line-height: 1.45; text-align: center; }
+.rj-step i { font-style: normal; color: var(--mk-ink-soft, #6b5a42); }
+.rj-step em { font-style: normal; font-weight: 900; color: var(--sp-color, #b03a2e); }
+.rj-f b { color: var(--sp-color, #b03a2e); }
+.rj-arr { color: var(--sp-color, #b03a2e); font-weight: 900; }
+.rj-tb th { color: var(--sp-color, #b03a2e); background: color-mix(in srgb, var(--sp-color, #b03a2e) 10%, transparent); }
+.rj-tb td:first-child { color: var(--sp-color, #b03a2e); background: color-mix(in srgb, var(--sp-color, #b03a2e) 6%, transparent); }
+.wks-info-body .rj-n { color: var(--sp-color, #b03a2e); }
+body.dark-mode .rj-step, body.dark-mode .rj-f { background: #221d18; }
+.wks-info-body .rj-tb th, .wks-info-body .rj-tb td { width: 31%; }
+:is(#wk-fullscreen, #wk-slide-area) .wks-info-body .rj-tb tr > :first-child { white-space: nowrap !important; width: 1%; }
+
+/* V193：孔子的一生 地圖底圖（今省界）＋中國小地圖 */
+.kzl-bg { fill: #dfe9ee; }
+.kzl-prov path { fill: #f5ecd8; stroke: #c9b48c; stroke-width: 1.5; stroke-dasharray: 6 4; }
+.kzl-prov-n { font-size: 20px; fill: #b3a283; font-family: "Noto Serif TC", serif; letter-spacing: 2px; }
+.kzl-inset-bg { fill: #fffdf8; stroke: #c9b48c; stroke-width: 1.5; opacity: .95; }
+.kzl-inset-land { fill: #e3d5b5; stroke: #b9a47c; stroke-width: .4; }
+.kzl-inset-box { fill: none; stroke: #d0312d; stroke-width: 2; }
+body.dark-mode .kzl-bg { fill: #1d2a30; }
+body.dark-mode .kzl-prov path { fill: #2a241c; stroke: #5a4a33; }
+body.dark-mode .kzl-prov-n { fill: #6e604c; }
+body.dark-mode .kzl-inset-bg { fill: #221d18; stroke: #5a4a33; }
+body.dark-mode .kzl-inset-land { fill: #4a3f30; stroke: #6e604c; }
+
+/* V193：弟子小檔案人物像（右浮動，每位弟子一張） */
+.wks-info-body b.dz-h { display: table; clear: both; }
+.wks-info-body .dz-img { float: right; width: 26%; max-width: 240px; margin: .2em 0 .6em 1em; border-radius: .6em; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+
+/* V193：〈論語選〉課前小標頁（178_v193-secpage-js） */
+.kz-sec { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 420px; padding: 2em 2.4em !important; }
+#wkfs-body .kz-sec { min-height: calc(100vh - 140px); }
+.kz-sec-head { display: flex; align-items: center; gap: .5em; padding-bottom: .35em; border-bottom: 4px solid var(--kzl-red, #b03a2e); margin-bottom: .9em; }
+.kz-sec-head-no { display: inline-flex; align-items: center; justify-content: center; width: 1.6em; height: 1.6em; border-radius: 50%; background: #b03a2e; color: #fff;
+  font-size: 44px; font-weight: 900; font-family: "Noto Serif TC", serif; }
+.kz-sec-title { font-size: 56px; font-weight: 900; color: #b03a2e; letter-spacing: .12em; font-family: "Noto Serif TC", serif; }
+.kz-sec-hint { display: flex; flex-wrap: wrap; gap: .5em .9em; font-size: 24px; color: var(--mk-ink-soft, #6b5a42); }
+.kz-sec-hint-i { display: inline-flex; align-items: center; gap: .35em; }
+.kz-sec-hint-i b { display: inline-flex; align-items: center; justify-content: center; width: 1.5em; height: 1.5em; border-radius: 50%; border: 2px solid #b03a2e; color: #b03a2e; font-size: .8em; }
+body.dark-mode .kz-sec-title { color: #ff8a7a; }
+body.dark-mode .kz-sec-hint-i b { border-color: #ff8a7a; color: #ff8a7a; }
+/* V199：弟子人物像放大（老師 11/2：太小） */
+.wks-info-body .dz-img { width: 38%; max-width: 380px; }
+/* ════ src/css/168_v194-hdclear-css.css ════ */
+/* V194：〈論語選〉補充講義分條、原文上色、語譯底框（179_v194-hdclear-js）。字級不變，用顏色與底框區分。 */
+.wks-hd2 .hdx-cell > div + div { margin-top: .45em; }
+.wks-hd2 .hdx-hd { color: #fff; background: #7c4da0; display: table; padding: 0 .6em; border-radius: .35em; margin-top: .6em; letter-spacing: .05em; }
+.wks-hd2 .hdx-cell > .hdx-hd:first-child { margin-top: 0; }
+.wks-hd2 .hdx-it { display: flex; gap: .45em; align-items: flex-start; }
+.wks-hd2 .hdx-n { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 1.45em; height: 1.45em; margin-top: .12em;
+  border-radius: 50%; background: #7c4da0; color: #fff; font-size: .82em; line-height: 1; }
+.wks-hd2 .hdx-c { flex: 1; min-width: 0; }
+.wks-hd2 .hdx-q { color: #7c4da0; font-weight: 700; }
+.wks-hd2 .hdx-tr { margin-left: 1.9em; padding: .25em .6em; border-radius: .4em; background: rgba(45,122,79,.09); border-left: 4px solid #2d7a4f; color: #24543a; }
+.wks-hd2 .hdx-trk { display: inline-block; margin-right: .45em; padding: 0 .4em; border-radius: .3em; background: #2d7a4f; color: #fff; font-size: .82em; }
+.wks-hd2 .hdx-opts .hdx-opt { display: block; }
+.wks-hd2 .hdx-gap { display: inline-block; width: 4em; height: 1.1em; margin: 0 .2em; vertical-align: -.15em; border: 2px dashed #b03a2e; border-radius: .3em; background: rgba(176,58,46,.06); }
+.wks-hd2.hdx-slide .hd-split-psg .hd-para { text-indent: 2em; }
+body.dark-mode .wks-hd2 .hdx-q { color: #c8a2e8; }
+body.dark-mode .wks-hd2 .hdx-tr { background: rgba(110,200,150,.1); border-left-color: #5fbf8a; color: #bfe6cf; }
+body.dark-mode .wks-hd2 .hdx-trk { background: #2d7a4f; }
+body.dark-mode .wks-hd2 .hdx-hd, body.dark-mode .wks-hd2 .hdx-n { background: #8d5cb5; }
+
+/* V196：補充講義填空答案放大＋亮紅＋淡黃底（老師 11/2：紫綠之後紅色答案不顯眼，答案字調大） */
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-hd2.hdx-slide .jy-blank.show span.jy-blank-ans.jy-blank-ans {
+  font-size: 1.25em !important; color: #d0312d; background: #fff3b0; border-radius: .2em; padding: 0 .2em; line-height: 1.2;
+}
+body.dark-mode :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-hd2.hdx-slide .jy-blank.show span.jy-blank-ans.jy-blank-ans { color: #ff8a7a; background: rgba(255,220,100,.18); }
+
+/* V198：答案再加紅色底線，更像「答案」（老師 11/2） */
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-hd2.hdx-slide .jy-blank.show span.jy-blank-ans.jy-blank-ans {
+  text-decoration: underline; text-decoration-color: #d0312d; text-decoration-thickness: .09em; text-underline-offset: .2em;
+}
+
+/* V198：整課字級統一（同 166 的 V187 規則）套到還沒上的 L07～L10（老師 11/2：「要，也要一起統一」）。
+   166 原規則不改；這裡用同樣的選擇器，只換課名。 */
+:is(body[data-wk="樂府詩選—長干行"], body[data-wk="茫茫人海中的一名女孩"], body[data-wk="桃花源記"], body[data-wk="極短篇小說選"]) #wkfs-body .wk-slide:not(.wks-textpage, .wks-cover, .t13-slide) { font-size: var(--student-read-size) !important; }
+:is(body[data-wk="樂府詩選—長干行"], body[data-wk="茫茫人海中的一名女孩"], body[data-wk="桃花源記"], body[data-wk="極短篇小說選"]) #wk-slide-area .wk-slide:not(.wks-textpage, .wks-cover, .t13-slide) { font-size: calc(var(--base-size) * 1.2) !important; }
+:is(body[data-wk="樂府詩選—長干行"], body[data-wk="茫茫人海中的一名女孩"], body[data-wk="桃花源記"], body[data-wk="極短篇小說選"]) :is(#wkfs-body, #wk-slide-area) .wk-slide:not(.wks-textpage, .wks-cover, .t13-slide)
+  *:not(h1, h2, h3, h4, h5, h6, button, summary, input, select, option, svg, svg *, rt, img,
+        [class*="head"], [class*="title"], [class*="badge"], [class*="-tag"], [class*="topbar"], [class*="book-page"], [class*="hint"], [class*="cov"],
+        [class*="v68-"], [class*="v61-"], .hd-mj, .hd-sub, .hd-page, .sec-mark, .sp-h, .dz-h, .au-cap, .sp-anno-mark, .sp-anno,
+        .tp-nn, .tp-gd, .jy-cir, .zy-ind, .ah-k, .gd-ek, .tp-pk, .hg-mk, .wk-appk, .aq-psgh, .tp-side-h, .tp-page, .mm-k, .mm-c) {
+  font-size: inherit !important;
+}
+:is(body[data-wk="樂府詩選—長干行"], body[data-wk="茫茫人海中的一名女孩"], body[data-wk="桃花源記"], body[data-wk="極短篇小說選"]) #wkfs-body .wks-textpage :is(.gd-q, .gd-sq) { font-size: var(--student-read-size) !important; }
+/* ════ src/css/169_v201-shi-css.css ════ */
+/* V201：〈論語選〉作者·補充｜春秋的士（封建金字塔）、弟子小檔案分組標題、孔子的一生「原典故事」點開框 */
+.shi-pyr { display: flex; flex-direction: column; align-items: center; gap: .25em; margin: .4em auto .7em; max-width: 46em; }
+.shi-l { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: .35em 1em; line-height: 1.4; text-align: center;
+  color: #fff; border-radius: .4em; clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%); }
+.wks-info-body .shi-l b, .wks-info-body .shi-l span { color: #fff !important; }
+.shi-l b { font-size: 1.15em; letter-spacing: .15em; }
+.shi-l span { font-size: .8em; opacity: .95; padding: 0 1.2em; }
+.shi-l1 { width: 26%; background: #7a2a20; clip-path: polygon(50% 0, 100% 100%, 0 100%); padding-top: 1.1em; }
+.shi-l1 span { display: none; }
+.shi-l2 { width: 46%; background: #934034; }
+.shi-l3 { width: 68%; background: #a8584a; }
+.shi-l4 { width: 84%; background: #d0312d; box-shadow: 0 0 0 3px #f5d533 inset; }
+.shi-l5 { width: 98%; background: #8a7d6a; }
+.shi-l4 b::before { content: '★ '; color: #f5d533; }
+.wks-info-body b.dz-g { display: block; clear: both; margin: .3em 0 .2em; color: var(--sp-color, #b03a2e); border-bottom: 2px solid currentColor; }
+.kzl-xbtn { display: block; margin: .6em 0 .2em; padding: .25em .8em; font: inherit; font-size: .85em; color: #7c4da0; background: transparent;
+  border: 2px solid #7c4da0; border-radius: 1em; cursor: pointer; }
+.kzl-xbtn.on { color: #fff; background: #7c4da0; }
+.kzl-xout { display: none; margin-top: .6em; padding: .5em .9em; border: 2px solid #7c4da0; border-radius: .6em; }
+.kzl.xon .kzl-xout { display: block; }
+.kzl-xout .sp-anc { margin: .35em 0; }
+.kzl-xh { display: block; color: #7c4da0; }
+body.dark-mode .kzl-xout { border-color: #c8a2e8; }
+body.dark-mode .kzl-xh { color: #c8a2e8; }
+body.dark-mode .kzl-xbtn { color: #c8a2e8; border-color: #c8a2e8; }
+body.dark-mode .kzl-xbtn.on { color: #1d1a16; background: #c8a2e8; }
+/* 全螢幕內文 30px 時金字塔太高：縮成 0.7 倍，一頁放得下整座 */
+body[data-wk="論語選—子路曾皙冉有公西華侍坐"] #wkfs-body .wk-slide .wks-info-body .shi-pyr.shi-pyr { font-size: calc(var(--student-read-size) * .7) !important; }  /* 要壓過 166 的 V187 inherit 規則 */
+/* ════ src/css/170_v202-lunyu-gd-css.css ════ */
+/* V202：〈論語選〉版面修正（老師 11/3）
+   1.〈論語〉二十篇表（ly-grid）：每格都是篇名，不是「項目欄」，第一欄不要紫底紫字（023 的 .ly-table td:first-child 規則不套）。
+   2. 提問引導的追問、答案、小結論、板書字級統一：全螢幕課文頁原本只把 .gd-q／.gd-sq 拉到學生閱讀字級（166、168），
+      答案（.gd-sa）等沒跟上，變成問題大、答案小。改成整個 .gd 用學生閱讀字級，裡面的內文一律 1em。 */
+.ly-table.ly-grid td:first-child { background: none; color: inherit; font-weight: inherit; text-align: left; }
+#wkfs-body .wks-textpage .gd { font-size: var(--student-read-size) !important; }
+#wkfs-body .wks-textpage .gd :is(.gd-q, .gd-sq, .gd-sa, .gd-qa, .gd-et, .gd-bh, .gd-bt, .gd-bt *) { font-size: 1em !important; }
+#wkfs-body .wks-textpage .gd table.ly-table { font-size: 1em !important; }
+/* ════ src/css/171_v203-iquiz-num-css.css ════ */
+/* V203：基礎練習考卷格式（180_v203-iquiz-num-js）：「(　) 1. 題目」，選項 (A)～(D) 對齊題目文字縮排；答案格答案出現才填。 */
+.wks-iquiz .iq-num { display: flex; align-items: baseline; }
+.wks-iquiz .iq-ab { flex: none; width: 3.4em; display: inline-flex; justify-content: space-between; }
+.wks-iquiz .iq-abv { visibility: hidden; color: var(--L-gloss, #1f6fb2); }
+.wks-iquiz.ans-on .iq-abv { visibility: visible; }
+.wks-iquiz .iq-qn { flex: none; width: 2em; margin-left: .3em; }
+.wks-iquiz .iq-qt { flex: 1; }
+/* 選項：縮排到題目文字下方；字母改成 (A)，不用圓圈；框線拿掉，點了才出現顏色 */
+.wks-iquiz .iq-opts { margin-left: calc(5.7em - 11px); gap: 2px; }   /* 5.7em＝答案格 3.4＋間距 .3＋題號 2；減掉選項的 padding 10px＋框線 1px，(A) 對齊題目第一個字 */
+.wks-iquiz .iq-opt { border-color: transparent; background: transparent; padding: 4px 10px; }
+.wks-iquiz .iq-opt:hover { border-color: var(--mk-line, #cabb96); }
+.wks-iquiz .iq-ok { width: auto; height: auto; line-height: inherit; border-radius: 0; background: none !important;
+  color: inherit; font-size: 1em; margin-right: .4em; }
+.wks-iquiz .iq-ok::before { content: "("; }
+.wks-iquiz .iq-ok::after { content: ")"; }
+.wks-iquiz .iq-opt.right.on .iq-ok { color: var(--L-gloss, #1f6fb2); font-weight: 700; }
+body.dark-mode .wks-iquiz .iq-opt { background: transparent; }
+/* ════ src/css/172_v204-iquiz-all-css.css ════ */
+/* V204：基礎練習（老師 11/3）：選項不縮排，改用淺淺的底色一列一列交替，學生看得清楚；「一鍵展開」按鈕放大、填色。
+   覆蓋 171_v203 的縮排與透明底（171 不改）。 */
+.wks-iquiz .iq-opts { margin-left: 0; gap: 0; }
+.wks-iquiz .iq-opt { border-color: transparent; padding: 6px 12px; }
+.wks-iquiz .iq-opt:nth-child(odd) { background: rgba(124, 77, 160, .08); }
+.wks-iquiz .iq-opt:nth-child(even) { background: rgba(201, 162, 39, .10); }
+.wks-iquiz .iq-opt:hover { border-color: var(--L-supp, #7c4da0); }
+.wks-iquiz .iq-opt.right.on { border-color: var(--L-gloss, #1f6fb2); background: rgba(31, 111, 178, .12); }
+body.dark-mode .wks-iquiz .iq-opt:nth-child(odd) { background: rgba(190, 150, 230, .10); }
+body.dark-mode .wks-iquiz .iq-opt:nth-child(even) { background: rgba(230, 200, 110, .08); }
+.wks-iquiz .iq-all { background: var(--L-supp, #7c4da0); color: #fff; font-weight: 700; font-size: 1em;
+  padding: 6px 18px; border-radius: 6px; letter-spacing: .1em; }
+.wks-iquiz .iq-all:hover { filter: brightness(1.1); }
+/* ════ src/css/173_v205-iquiz-top-css.css ════ */
+/* V205：基礎練習標題列只放課本頁碼（左）＋一鍵展開／收起（右）（182_v205-iquiz-top-js） */
+.wks-iquiz .iq-top { justify-content: space-between; }
+.wks-iquiz .iq-pg { font-family: "Noto Serif TC", serif; font-weight: 700; color: var(--mk-ink-soft, #6b5a42); letter-spacing: .05em; }
+.wks-iquiz .iq-pg:empty { visibility: hidden; }
+/* ════ src/css/174_v206-iquiz-page-css.css ════ */
+/* V206：基礎練習「開／關」按鈕放在題目那一行最右邊（183_v206-iquiz-page-js）；頁碼用原本的右上角浮框 .wks-book-page */
+.wks-iquiz .iq-num { align-items: center; }
+.wks-iquiz .iq-onoff { flex: none; margin-left: auto; padding: 2px 14px; font-size: .8em; letter-spacing: .15em; }
+#wk-fullscreen .wks-iquiz .iq-num { margin-top: 24px; }   /* 全螢幕：右上角頁碼浮框（top 52px）不要壓到題目行的「開」 */
+/* ════ src/css/175_v208-teacher-core-css.css ════ */
+/* V208：〈論語選〉「師」最上面的考試核心／可討論（老師 11/3「放進『師』」；資料由 lunyu_core_to_teacher_20261103.js 寫入 askT） */
+.tp-asktin .tk-core, .tp-asktin .tk-open { margin: 2px 0 4px; padding: 3px 8px; border-radius: 4px; line-height: 1.7; }
+.tp-asktin .tk-core { background: rgba(192, 57, 43, .08); border-left: 3px solid #c0392b; }
+.tp-asktin .tk-open { background: rgba(31, 111, 178, .07); border-left: 3px solid #1f6fb2; }
+.tp-asktin .tk-k { display: inline-block; margin-right: .5em; padding: 0 .45em; border-radius: 3px; color: #fff; font-size: .82em; font-weight: 700; letter-spacing: .05em; }
+.tp-asktin .tk-core .tk-k { background: #c0392b; }
+.tp-asktin .tk-open .tk-k { background: #1f6fb2; }
+.tp-asktin .tk-sep { height: 0; margin: 6px 0; border-top: 1px dashed rgba(107, 90, 66, .4); }
+body.dark-mode .tp-asktin .tk-core { background: rgba(231, 110, 95, .12); }
+body.dark-mode .tp-asktin .tk-open { background: rgba(120, 180, 240, .10); }
+/* ════ src/css/176_v209-shi-img-css.css ════ */
+/* V209：〈論語選〉作者·補充｜春秋的士：CSS 金字塔換成課本封建宗法圖（老師 11/4） */
+.wks-info-body img.shi-pyr-img { display: block; width: 70%; max-width: 760px; height: auto; max-height: 72vh; object-fit: contain;
+  margin: .4em auto .8em; background: #fff; border-radius: .4em; }
+#wkfs-body .wks-info-body img.shi-pyr-img { width: auto; max-width: 92%; height: 70vh; }
+body.dark-mode .wks-info-body img.shi-pyr-img { padding: .3em; }
+/* ════ src/css/177_v211-t13quiz-css.css ════ */
+/* V211：〈論語選〉十三經小考（177_v211-t13quiz-js） */
+#nq2-t13btn.on { background: var(--q-ink); color: var(--q-paper); }
+#nq2-t13 { display: none; }
+#nq2.t13q #nq2-t13 { display: block; }
+#nq2.t13q #nq2-setup .bar, #nq2.t13q #nq2-hint, #nq2.t13q #nq2-grid,
+#nq2.t13q .dock label, #nq2.t13q #nq2-bUnex, #nq2.t13q #nq2-v108vm { display: none !important; }
+#nq2-t13 .t13s-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 4px; font-size: 17px; }
+#nq2-t13 .t13s-bar b { font-size: 22px; }
+#nq2-t13 .t13s-bar input { width: 64px; font-size: 18px; padding: 4px 6px; border: 2px solid var(--q-line); border-radius: 8px; background: var(--q-surface); color: var(--q-ink); }
+#nq2-t13 .hint { margin: 4px 0 14px; }
+
+/* 書名格子（同「十三經的演變」：棕框、灰色《》、襯線粗體） */
+.t13s-c, .t13q-c { font-family: "Noto Serif TC", serif; font-weight: 700; color: var(--q-ink); background: var(--q-surface);
+  border: 2px solid #8a5a1f; border-radius: .35em; text-align: center; line-height: 1.3; position: relative; }
+.t13s-c .nm::before, .t13q-c .nm::before { content: "《"; opacity: .45; }
+.t13s-c .nm::after, .t13q-c .nm::after { content: "》"; opacity: .45; }
+#nq2-t13 .t13s-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px 12px; }
+.t13s-c { font-size: 28px; padding: .25em .3em; cursor: pointer; white-space: nowrap; }
+.t13s-c.on { border-color: var(--q-gold); background: var(--q-gold-soft); box-shadow: 0 0 0 3px var(--q-gold) inset; }
+.t13s-c.on::after { content: "抽到"; position: absolute; top: -11px; right: 8px; font-size: 13px; font-family: "Noto Sans TC", sans-serif;
+  background: var(--q-gold); color: #fff; border-radius: 6px; padding: 1px 6px; }
+.t13s-c.ex { border-style: dashed; color: var(--q-ex); background: var(--q-ex-bg); }
+.t13s-c.ex::after { content: "不抽"; position: absolute; top: -11px; right: 8px; font-size: 13px; font-family: "Noto Sans TC", sans-serif;
+  background: var(--q-ex); color: #fff; border-radius: 6px; padding: 1px 6px; }
+
+/* 考卷：13 格一樣寬（不讓三個字的書名格子變寬洩漏答案） */
+#nq2-qlist .t13q-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(5.6em), 1fr)); gap: .45em .4em;
+  font-size: calc(44px * var(--q-fs)); padding: .6em .5em .3em; }
+.t13q-c { padding: .2em .2em; white-space: nowrap; }
+.t13q-c.blank { cursor: pointer; border-style: dashed; border-color: var(--q-ink); background: var(--q-paper); }
+.t13q-c.blank .nm { visibility: hidden; }
+.t13q-c.blank.open .nm { visibility: visible; color: #c0392b; }
+.t13q-c .qn { position: absolute; left: -.35em; top: 50%; transform: translateY(-50%); width: 1.25em; height: 1.25em; border-radius: 50%;
+  display: grid; place-items: center; background: var(--q-ink); color: var(--q-paper); font-family: "Noto Sans TC", sans-serif; font-size: .62em; font-weight: 800; }
+#nq2-qlist .t13q-foot { padding: .2em .8em .8em; font-size: calc(24px * var(--q-fs)); color: var(--q-muted); text-align: center; }
+#nq2-qlist .t13q-foot b { color: var(--q-ink); }
+body.dark-mode .t13s-c, body.dark-mode .t13q-c { border-color: #e0b070; }
+body.dark-mode .t13q-c.blank { border-color: var(--q-ink); }
+body.dark-mode .t13q-c.blank.open .nm { color: #e8735f; }
+
+/* 小考紀錄面板（v108）：十三經那筆不能換題／編輯 */
+#v108-nqr .rec.t13 .sw, #v108-nqr .rec.t13 .v111-eb, #v108-nqr .rec.t13 .v109-cp { display: none !important; }
+/* 記錄視窗（v109）：十三經訂正固定全抄，藏「訂正要抄」 */
+#nq2.t13q .v109-dlg > div + div { display: none; }
+#nq2.t13q .v109-dlg::after { content: "訂正要抄：十三經全抄（《詩經》到《孟子》13 部依序）"; display: block; margin-top: 6px; font-weight: 700; }
+
+/* V214：聯合小考（註釋＋十三經加分）——下方工具列控制項、考卷最後的加分段 */
+#nq2-t13bw { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 2px dashed #8a5a1f; border-radius: 10px; }
+#nq2-t13bw input { width: 58px; font-size: 20px; padding: 4px 6px; border: 2px solid var(--q-line); border-radius: 8px; background: var(--q-paper); color: var(--q-ink); text-align: center; }
+#nq2.t13q #nq2-t13bw { display: none !important; }
+#nq2-qlist .t13b { margin: .6em 0 .4em; border-top: 3px double var(--q-line); padding-top: .4em; }
+#nq2-qlist .t13b-h { font-size: calc(26px * var(--q-fs)); font-weight: 800; padding: 0 .6em; color: var(--q-ink); }
+#nq2-qlist .t13b-h small { margin-left: .8em; font-size: .7em; font-weight: 400; color: var(--q-muted); }
+/* V216：打亂順序勾選 */
+.t13-sh { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; }
+.t13-sh input { width: 20px !important; height: 20px; margin: 0; padding: 0 !important; accent-color: #8a5a1f; }
+/* ════ src/css/180_v227-cbloc-css.css ════ */
+/* V227 字詞辨析例句後的（第幾段，P.頁）：小字、淡色 */
+.jy-table .cb-loc { font-size: .72em; color: #8a7f72; margin-left: .35em; white-space: nowrap; font-weight: normal; }
+/* ════ src/css/181_v228-daozhuang-css.css ════ */
+/* V228 〈論語選〉◆倒裝：白話說明＋「字搬回原位」小動畫（純 CSS 循環，每例 6 秒） */
+.dz-box p { margin: .35em 0 .7em; line-height: 1.75; }
+.dz-rule { font-weight: 700; color: #7a4a12; background: #fbf3e4; border-left: 4px solid #d9a54a; padding: .35em .7em; margin: .2em 0 .5em; border-radius: 4px; }
+.dz-leg { font-size: .82em; color: #6b625a; margin: .3em 0 .2em; }
+.dz-o { color: #c0392b; font-weight: 700; }
+.dz-v { color: #1f6fb2; font-weight: 700; }
+.dz-ex { display: inline-block; vertical-align: top; min-width: 46%; margin: .4em 1% .6em; padding: .5em .8em .6em; border: 1px solid #e3d7c5; border-radius: 10px; background: #fffdf8; text-align: center; box-sizing: border-box; }
+.dz-lab { position: relative; height: 1.5em; font-size: .85em; }
+.dz-lab span { position: absolute; left: 0; right: 0; font-weight: 700; }
+.dz-l1 { color: #8a7f72; animation: dzL1 6s ease-in-out infinite; }
+.dz-l2 { color: #2e7d4f; opacity: 0; animation: dzL2 6s ease-in-out infinite; }
+.dz-row { display: flex; justify-content: center; font-size: 2.1em; line-height: 1.5; margin: .15em 0 .1em; padding-top: .45em; }
+.dz-t { display: inline-block; width: 1.25em; text-align: center; animation: dzMove 6s ease-in-out infinite; }
+.dz-t.dz-o { animation-name: dzHop; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .18em; }
+.dz-eq { font-size: 1em; color: #4a4038; margin-top: .1em; }
+.dz-tr { font-size: .9em; color: #2e7d4f; margin-top: .15em; }
+@keyframes dzMove { 0%, 28% { transform: none; } 42%, 80% { transform: translateX(calc(var(--d, 0) * 1.25em)); } 94%, 100% { transform: none; } }
+@keyframes dzHop {
+  0%, 28% { transform: none; }
+  35% { transform: translate(calc(var(--d, 0) * .625em), -.6em); }
+  42%, 80% { transform: translateX(calc(var(--d, 0) * 1.25em)); }
+  87% { transform: translate(calc(var(--d, 0) * .625em), -.6em); }
+  94%, 100% { transform: none; }
+}
+@keyframes dzL1 { 0%, 30% { opacity: 1; } 38%, 84% { opacity: 0; } 92%, 100% { opacity: 1; } }
+@keyframes dzL2 { 0%, 34% { opacity: 0; } 42%, 80% { opacity: 1; } 88%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .dz-t, .dz-l1, .dz-l2 { animation: none; } }
+@media (max-width: 700px) { .dz-ex { min-width: 96%; } }
+/* 字級：論語選全域「inherit !important」與 v73/v74 修辭頁字級規則會蓋掉上面的 em，這裡用較高權重指定 */
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-ex { font-size: 1em !important; }
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-ex .dz-row { font-size: 2.1em !important; }
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-ex .dz-row .dz-t { font-size: 1em !important; }
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-ex .dz-lab,
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-ex .dz-lab span { font-size: .85em !important; }
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-ex .dz-lab span { font-size: 1em !important; }
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-ex .dz-tr { font-size: .9em !important; }
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-leg,
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-leg span { font-size: .85em !important; }
+body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-leg span { font-size: 1em !important; }
+/* V229 主語／述語／賓語 ↔ 英文 S／V／O 對照表與英文類比句 */
+.dz-svo { border-collapse: collapse; margin: .2em 0 .8em; }
+.dz-svo th, .dz-svo td { border: 1px solid #e3d7c5; padding: .25em .7em; text-align: center; }
+.dz-svo th { background: #f6efe3; color: #5a4a3a; font-weight: 700; }
+.dz-s { color: #2e7d4f; font-weight: 700; }
+.dz-en { display: inline-block; margin-top: .25em; font-weight: 400; color: #4a4038; font-size: .92em; }
+.dz-en b { color: #c0392b; }

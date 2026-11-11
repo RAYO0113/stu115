@@ -438,6 +438,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     document.body.classList.toggle('pv', !!(D.teacher || (D.me && D.me.preview)));
     if (D.teacher) { renderPick(); return; }
     var me = D.me, td = D.today;
+    if (me && me.cls && !me.preview) lsSet('stuapp_cls_v1', me.cls);   /* 11/11：課文頁依班級只列自己科的作文教學（text/nav.js 讀） */
     $('pvbar').innerHTML = me.preview ? '老師預覽：' + esc(me.cls + ' ' + me.seat + ' 號 ' + me.name) + '<a id="pvchg">換人</a>' : '';
     if (me.preview) $('pvchg').onclick = function () { ssSet(PV, ''); load(); };
     $('pvpick').innerHTML = '';

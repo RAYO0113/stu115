@@ -22,7 +22,7 @@
 <script id="v50-apple-pencil-priority" src="dist/012_v50-apple-pencil-priority.js?v=6b82bdb9"></script>
 
 
-<style id="stu-css">.demo-tag{font-size:.5em;margin-left:.6em;padding:2px 8px;border-radius:10px;background:#c0662a;color:#fff;vertical-align:middle}#cls-tab,#cls-panel{display:none!important}.stu-back{position:fixed;left:10px;bottom:10px;z-index:9999;padding:6px 12px;border-radius:16px;background:rgba(192,102,42,.92);color:#fff;font-size:14px;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}</style>
+<style id="stu-css">#wenxue-prose-list,#wenxue-extra-list{display:none}.demo-tag{font-size:.5em;margin-left:.6em;padding:2px 8px;border-radius:10px;background:#c0662a;color:#fff;vertical-align:middle}#cls-tab,#cls-panel{display:none!important}.stu-back{position:fixed;left:10px;bottom:10px;z-index:9999;padding:6px 12px;border-radius:16px;background:rgba(192,102,42,.92);color:#fff;font-size:14px;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}</style>
 </head>
 <body>
 <a class="stu-back" href="../../">← 回班級網頁</a>
@@ -51,6 +51,7 @@
       <div class="wenxue-sidebar">
         <div id="wenxue-list" hidden></div><div id="wenxue-extra-list" hidden></div>
         <div class="wenxue-sidebar-title">課文</div>
+        <div id="stu-nav"></div>
         <div id="wenxue-prose-list"></div>
         <div class="wenxue-sidebar-title" style="margin-top:12px">作文教學</div>
         <div id="wenxue-zuowen-list"></div>
@@ -217,7 +218,8 @@
      v83：改為「每台裝置自行啟用」，預設關閉（分享給其他老師時不顯示、不記錄） ════ -->
 <!-- ════ v84：課後習題／習作／A卷「考試・檢討」完成紀錄（點選即完成，不需打字；只加不刪） ════ -->
 <!-- ════ v88：① 左下角版號（全螢幕投影隱藏）② 〈師說〉錯綜／回文動畫：去掉重複的「原句」列，原句直接拆開飛成動畫 ③ 交錯語次編號改 ①②③④→①③／②④（老師 9/30 指正）（只加不刪；v80 不動，本版包 wkRenderSlideHTML 接手 v80rx 頁） ════ -->
-<script src="dist/app.js?v=c1de0cd7"></script>
+<script src="../nav.js"></script>
+<script src="dist/app.js?v=c0f10a66"></script>
 <script>window.addEventListener('load', function () { setTimeout(function () { if (typeof showWenxue === 'function') showWenxue("珍珠奶茶"); }, 0); });</script>
 </body>
 </html>
