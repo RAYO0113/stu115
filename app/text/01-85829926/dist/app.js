@@ -6842,3 +6842,21 @@ try {
   setVer(); if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setVer);
 })();
 } catch (e) { setTimeout(function () { throw e; }); }
+/* ════ 學生分班版：習作不放答案總覽、詳解預設全開（build_stu_text.py 加，老師 11/12） ════ */
+try {
+  (function () {
+    var prev = wkParseSlides;
+    wkParseSlides = function () { return prev.apply(this, arguments).filter(function (s) { return !s || s.type !== 'work_answers'; }); };
+    function openAll(root) {
+      (root || document).querySelectorAll('.wq-item:not([data-allopen])').forEach(function (it) {
+        it.setAttribute('data-allopen', '1');
+        it.querySelectorAll('.wq-opt').forEach(function (o) { o.classList.add('on'); });
+        it.classList.add('ans-on');
+        var ans = it.getAttribute('data-ans') || '';
+        it.querySelectorAll('.wq-opt').forEach(function (o) { if (ans.indexOf(o.getAttribute('data-k')) >= 0) o.classList.add('right'); });
+        var b = it.querySelector('.wq-reveal-btn'); if (b) b.textContent = '隱藏答案';
+      });
+    }
+    new MutationObserver(function () { openAll(document); }).observe(document.documentElement, { childList: true, subtree: true });
+  })();
+} catch (e) { setTimeout(function () { throw e; }); }
