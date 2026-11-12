@@ -310,7 +310,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
           <div class="hero text fade"><div class="hi">課文筆記搬家中</div><div class="meta">筆記、習作、A卷之後會一課一課搬到這裡</div></div>
           <div class="cd fade lsn"><a class="it external" href="text/03/"><div class="ic g"><i class="ti ti-cup"></i></div><div class="tx"><b>第 4 課〈珍珠奶茶〉</b><span>課文・注釋・修辭・補充講義</span></div><i class="ti ti-chevron-right chev"></i></a></div>
           <div class="cd fade lsn"><a class="it external" href="text/04/"><div class="ic g"><i class="ti ti-train"></i></div><div class="tx"><b>第 5 課〈臺灣最美麗的火車線〉</b><span>課文・注釋・修辭・補充講義</span></div><i class="ti ti-chevron-right chev"></i></a></div>
-          <div class="cd fade lsn"><a class="it external" href="text/01/"><div class="ic g"><i class="ti ti-school"></i></div><div class="tx"><b>第 6 課〈論語選—子路曾皙冉有公西華侍坐〉</b><span>課文・注釋・修辭・補充講義</span></div><i class="ti ti-chevron-right chev"></i></a></div>
+          <div class="cd fade lsn"><a class="it external" id="lsn01" href="text/01/"><div class="ic g"><i class="ti ti-school"></i></div><div class="tx"><b>第 6 課〈論語選—子路曾皙冉有公西華侍坐〉</b><span>課文・注釋・修辭・補充講義</span></div><i class="ti ti-chevron-right chev"></i></a></div>
           <div class="cd fade"><div class="empty"><i class="ti ti-truck-delivery"></i>其他課請先用原本的班級網頁<br>（老師給你們班的連結）看筆記、習作、A卷。</div></div>
         </div>
       </div>
@@ -439,6 +439,10 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     if (D.teacher) { renderPick(); return; }
     var me = D.me, td = D.today;
     if (me && me.cls && !me.preview) lsSet('stuapp_cls_v1', me.cls);   /* 11/11：課文頁依班級只列自己科的作文教學（text/nav.js 讀） */
+    /* 11/12 老師：第 6 課習作講解只推冷一孝 → 該班的第 6 課卡片連到含習作的版本（其他班照舊） */
+    (function () { var l = $('lsn01'); if (!l) return; var w = me && me.cls === '冷一孝';
+      l.setAttribute('href', w ? 'text/01-85829926/' : 'text/01/');
+      l.querySelector('span').textContent = w ? '課文・注釋・修辭・補充講義・習作講解' : '課文・注釋・修辭・補充講義'; })();
     $('pvbar').innerHTML = me.preview ? '老師預覽：' + esc(me.cls + ' ' + me.seat + ' 號 ' + me.name) + '<a id="pvchg">換人</a>' : '';
     if (me.preview) $('pvchg').onclick = function () { ssSet(PV, ''); load(); };
     $('pvpick').innerHTML = '';

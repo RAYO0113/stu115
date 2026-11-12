@@ -7,6 +7,8 @@
   'use strict';
   var LESSONS = [['03', '第 4 課〈珍珠奶茶〉'], ['04', '第 5 課〈臺灣最美麗的火車線〉'], ['01', '第 6 課〈論語選—侍坐〉']];
   var cls = '';
+  /* 11/12：分班版（班名＋課號 → 資料夾）。冷一孝的第 6 課含習作講解 */
+  var SPECIAL = { '冷一孝01': '01-85829926' };
   try { cls = localStorage.getItem('stuapp_cls_v1') || ''; } catch (e) {}
   window.STU_DEPT = cls.charAt(0) === '冷' ? 'cold' : cls.charAt(0) === '建' ? 'arch' : '';
   /* 主程式載入後會把側欄的 active 清掉，所以目前這一課另外用 stu-cur 標示 */
@@ -15,9 +17,9 @@
   document.head.appendChild(st);
   function build() {
     var box = document.getElementById('stu-nav'); if (!box) return;
-    var m = location.pathname.match(/text\/(\d+)\//), cur = m ? m[1] : '';
+    var m = location.pathname.match(/text\/(\d+)(?:-\w+)?\//), cur = m ? m[1] : '';
     box.innerHTML = LESSONS.map(function (l) {
-      return '<button class="wenxue-nav-item' + (l[0] === cur ? ' active stu-cur' : '') + '" onclick="' + (l[0] === cur ? '' : "location.href='../" + l[0] + "/'") + '">' + l[1] + '</button>';
+      return '<button class="wenxue-nav-item' + (l[0] === cur ? ' active stu-cur' : '') + '" onclick="' + (l[0] === cur ? '' : "location.href='../" + (SPECIAL[cls + l[0]] || l[0]) + "/'") + '">' + l[1] + '</button>';
     }).join('');
   }
   if (document.readyState !== 'loading') build(); else document.addEventListener('DOMContentLoaded', build);
