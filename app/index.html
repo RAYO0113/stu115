@@ -93,6 +93,12 @@ body{color:var(--ink)}
 .it .ic{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--soft);color:var(--muted)}
 .it .ic.r{background:rgba(168,42,42,.12);color:var(--red)}.it .ic.g{background:rgba(200,147,26,.15);color:var(--gold)}.it .ic.k{background:rgba(47,125,85,.12);color:var(--ok)}
 .it .tx{flex:1;min-width:0}.it .tx b{display:block;font-weight:500}.it .tx span{font-size:13px;color:var(--muted)}
+/* 缺交視窗（11/16） */
+.mp-dlg{--f7-dialog-width:min(340px,92vw)}.mp-dlg .dialog-inner{max-height:68vh;overflow:auto}.mp-dlg .dialog-title{color:var(--red)}
+.mp{text-align:left;font-size:15px;line-height:1.6;margin-top:6px}.mp-g{padding:10px 0;border-top:1px solid var(--line)}.mp-g:first-child{border-top:0}
+.mp-t{font-weight:700;font-size:15.5px;margin-bottom:4px}.mp-i{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.mp-i .pill{flex:none;margin-top:2px}.mp-n{min-width:0}
+.mp-how{margin-top:6px;font-weight:500}.mp-when{display:block;font-size:19px;color:var(--red);margin:2px 0 0 1.1em}.mp-alt{display:block;font-size:13px;color:var(--muted);margin-left:1.5em}
+.pill.b{background:rgba(46,90,122,.16);color:#2e5a7a}.dark .pill.b{color:#9cc4ff}
 .pill{font-size:12.5px;padding:3px 10px;border-radius:99px;white-space:nowrap;font-weight:500}
 .pill.r{background:var(--red);color:#fff}.pill.g{background:rgba(200,147,26,.18);color:#9a6c0c}.pill.n{background:var(--soft);color:var(--muted)}.pill.k{background:rgba(47,125,85,.14);color:var(--ok)}
 .dark .pill.g{color:var(--gold)}
@@ -422,7 +428,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     fetch(CFG.api, { method: 'POST', body: JSON.stringify(req), redirect: 'follow' }).then(function (r) { return r.json(); }).then(function (d) {
       if (done) done();
       if (!d.ok) { if (d.auth === false) { lsSet(TK, ''); showLogin('登入已過期，請重新登入'); } else app.toast.create({ text: '讀取失敗：' + (d.error || ''), closeTimeout: 4000 }).open(); return; }
-      D = d; render();
+      D = d; render(); missPop();
       $('login').classList.add('out'); $('loading').classList.add('out');
     }).catch(function () {
       if (done) done();
@@ -432,6 +438,44 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   }
   app.on('ptrRefresh', function (el) { load(function () { app.ptr.done(el); }); });
   window.addEventListener('hashchange', function () { if (takeHash()) { $('loading').classList.remove('out'); load(); } });
+
+  /* ── 缺交視窗（老師 11/16）──
+     登入後如果有「過期沒交」或「請假待補」的，先跳視窗，按「我知道了」才進首頁。一天只跳一次（記在這支手機 stuapp_misspop_v1＝日期|班|座號）；
+     老師預覽不記，每次都跳。不記錄誰按過。
+     怎麼補：注釋小考 → 下一節國文課下課找老師（後台 gr-23 的 nx 給日期與節次，寫成「11/18（三）第 2 節下課」）；A卷 → 找小老師；其他 → 盡快補交。
+     後台還是舊版（沒有 nx）時，只寫「下一節國文課下課」。 */
+  var MP = 'stuapp_misspop_v1';
+  function lessonTxt(x, td) {   /* {d, p:[節次]} → 「11/18（三）第 2 節下課」；連堂取連著的最後一節 */
+    if (!x || !x.d) return '';
+    var p = (x.p || []).slice(), last = p[0];
+    for (var i = 1; i < p.length; i++) { if (p[i] === last + 1) last = p[i]; else break; }
+    return (x.d === td ? '今天' : md(x.d)) + (last ? '第 ' + last + ' 節下課' : '下課');
+  }
+  function missPop() {
+    if (!D || D.teacher || !D.me) return;
+    var me = D.me, td = D.today, key = td + '|' + me.cls + '|' + me.seat;
+    if (!me.preview && lsGet(MP) === key) return;
+    var list = (D.items || []).filter(function (it) { return it.st === 'missing' || it.st === 'leave'; });
+    if (!list.length) return;
+    var nx = D.nx || [], when = lessonTxt(nx[0], td), when2 = nx[0] && nx[0].d === td ? lessonTxt(nx[1], td) : '';
+    var G = [
+      { t: '小考補考', how: '下一節國文課下課，去找老師補考' + (when ? '<b class="mp-when">' + esc(when) + '</b>' + (when2 ? '<span class="mp-alt">今天來不及的話：' + esc(when2) + '</span>' : '') : ''), f: function (it) { return it.type === '註釋小考'; } },
+      { t: '大卷補考', how: '找小老師補考', f: function (it) { return it.type === 'A卷'; } },
+      { t: '要補交的', how: '盡快補交', f: function (it) { return it.type !== '註釋小考' && it.type !== 'A卷'; } }
+    ];
+    var h = '';
+    G.forEach(function (g) {
+      var a = list.filter(g.f); if (!a.length) return;
+      h += '<div class="mp-g"><div class="mp-t">' + g.t + '</div>' + a.map(function (it) {
+        var lv = it.st === 'leave';
+        return '<div class="mp-i"><span class="pill ' + (lv ? 'b' : 'r') + '">' + (lv ? '請假待補' : '缺交') + '</span><span class="mp-n">' + esc(it.title || tname(it.type)) + '</span></div>';
+      }).join('') + '<div class="mp-how">→ ' + g.how + '</div></div>';
+    });
+    app.dialog.create({
+      title: '你有 ' + list.length + ' 件還沒完成', content: '<div class="mp">' + h + '</div>', cssClass: 'mp-dlg',
+      buttons: [{ text: '我知道了', bold: true, onClick: function () { if (!me.preview) lsSet(MP, key); } }]
+    }).open();
+  }
 
   /* ── 畫面 ── */
   function render() {
