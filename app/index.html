@@ -144,6 +144,14 @@ body{color:var(--ink)}
 .sem .zb{display:flex;align-items:center;gap:6px;margin-top:8px;padding:8px 10px;border-radius:12px;background:rgba(168,42,42,.1);color:var(--red);font-size:13.5px;cursor:pointer}.sem .zb .ti-chevron-right{margin-left:auto}
 .sem .r .v i{font-style:normal;font-size:12px;color:var(--red);margin-left:4px}
 .sem .tip{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+/* 11/16「今天」卡：首頁最上面，照順序最多三件 */
+.tdy{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:0 16px 12px;padding:12px 16px 4px}
+.tdy .hd{font-size:13px;color:var(--muted);margin-bottom:2px}
+.tdy .st{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px dashed var(--line)}.tdy .hd+.st{border-top:0}.tdy .st[data-go]{cursor:pointer}
+.tdy .no{flex:none;width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font:700 14px/26px "Noto Serif TC",serif;text-align:center}
+.tdy .st.q .no{background:var(--gold)}.tdy .st.k .no{background:var(--ok)}.dark .tdy .no{color:#1b140e}
+.tdy .tx{flex:1;min-width:0}.tdy .tx b{display:block;font-size:15.5px;line-height:1.45}.tdy .tx span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.tdy .chev{flex:none;color:var(--muted)}
 .sc{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .sc:first-child{border-top:0;padding-top:2px}
 .sc .tx{flex:1;min-width:0}.sc .tx b{display:block;font-weight:500}.sc .tx>span{font-size:12.5px;color:var(--muted)}
@@ -533,6 +541,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var cal = (D.cal || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
     var next = cal.filter(function (e) { return e.date >= td && e.date <= addD(td, 14); });
     var h = '<div class="hero fade"><div class="hi">' + esc(me.cls) + '　' + me.seat + ' 號</div><div class="meta">' + md(td) + (todo.length ? '・有 ' + todo.length + ' 件要注意' : '・目前沒有要補的') + '</div></div>';
+    h += todayCard(td);   /* 11/16 老師：首頁告訴學生今天先做哪一件 */
     h += '<div id="sem"></div>';   /* 10/22 老師：學期總成績放首頁（登入就看到） */
     h += '<div class="sec"><h2>要交、要補的</h2></div><div class="cd fade">' + (todo.length ? todo.map(function (it) { return itemRow(it, td); }).join('') :
       '<div class="empty"><i class="ti ti-circle-check"></i>都交了，很棒！</div>') + '</div>';
@@ -544,6 +553,43 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     }).join('') : '<div class="empty"><i class="ti ti-calendar"></i>老師還沒排</div>') + '</div><div style="height:20px"></div>';
     $('home').innerHTML = h;
     renderSem();
+    var tc = $('tdy');
+    if (tc) tc.onclick = function (e) {
+      var s = e.target.closest('[data-go]'); if (!s) return;
+      var go = s.getAttribute('data-go');
+      if (go === 'miss') { app.tab.show('#view-me'); app.tab.show('#me-miss'); }
+      else { app.tab.show('#view-prac'); if (go === 'mem' && TDQ && window.STUPRAC) STUPRAC.memRange(TDQ.lessons[0], TDQ.quiz.a, TDQ.quiz.b, TDQ.quiz, TDQ.item); }
+    };
+  }
+
+  /* ── 「今天」卡（老師 11/16）──
+     首頁最上面，照順序最多列三件：①先補（小考找老師、A卷找小老師、其他補交；說法同缺交視窗）②今天、明天到期的 ③七天內最近一次還沒考的小考（點了去背書）。
+     都沒有就請他去刷題。只用後台已經給的資料（items、cal、quiz、nx），不另外記東西。 */
+  var TDQ = null;
+  function todayCard(td) {
+    var items = D.items || [], nx = D.nx || [], when = lessonTxt(nx[0], td), when2 = nx[0] && nx[0].d === td ? lessonTxt(nx[1], td) : '', S = [];
+    function names(a) { return esc(a[0].title || tname(a[0].type)) + (a.length > 1 ? ' 等 ' + a.length + ' 件' : ''); }
+    var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; });
+    var mq = miss.filter(function (it) { return it.type === '註釋小考'; }), ma = miss.filter(function (it) { return it.type === 'A卷'; }),
+      mo = miss.filter(function (it) { return it.type !== '註釋小考' && it.type !== 'A卷'; });
+    if (mq.length) S.push({ c: '', go: 'miss', b: '補考小考：' + names(mq), s: (when ? esc(when) : '下一節國文課下課') + '，去找老師補考' + (when2 ? '（來不及就 ' + esc(when2) + '）' : '') });
+    if (ma.length) S.push({ c: '', go: 'miss', b: '補考大卷：' + names(ma), s: '找小老師補考' });
+    if (mo.length) S.push({ c: '', go: 'miss', b: '補交：' + names(mo), s: '盡快補交' });
+    var tm = addD(td, 1);
+    [[td, '今天'], [tm, '明天']].forEach(function (p) {
+      var a = items.filter(function (it) { return it.st === 'open' && it.due === p[0]; });
+      if (a.length) S.push({ c: 'q', go: '', b: p[1] + '要交：' + names(a), s: a.map(function (it) { return tname(it.type); }).filter(function (t, i, r) { return r.indexOf(t) === i; }).join('、') });
+    });
+    var done = {}; (D.quiz || []).forEach(function (r) { if (r.at) done[ymd(new Date(r.at))] = 1; });
+    var q = (D.cal || []).filter(function (e) { return e.quiz && e.date >= td && e.date <= addD(td, 7) && !done[e.date]; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; })[0];
+    TDQ = q && (q.lessons || [])[0] ? q : null;
+    if (q) S.push({ c: 'k', go: TDQ ? 'mem' : 'prac', b: rel(q.date, td) + '考：' + esc(q.item || '注釋小考'), s: '範圍 註' + esc(q.quiz.a) + '～註' + esc(q.quiz.b) + (TDQ ? '・點這裡先背書' : '') });
+    if (!S.length) S.push({ c: 'k', go: 'prac', b: '沒有要補、要交的', s: '去練習區刷幾題，保持手感' });
+    S = S.slice(0, 3);
+    return '<div class="tdy fade" id="tdy"><div class="hd">今天先做</div>' + S.map(function (x, i) {
+      return '<div class="st ' + x.c + '"' + (x.go ? ' data-go="' + x.go + '"' : '') + '><div class="no">' + (i + 1) + '</div><div class="tx"><b>' + x.b + '</b><span>' + x.s + '</span></div>' +
+        (x.go ? '<i class="ti ti-chevron-right chev"></i>' : '') + '</div>';
+    }).join('') + '</div>';
   }
 
   function renderPrac(td) {
