@@ -4367,7 +4367,7 @@ try {
       bx.style.top = rc.t + 'px'; placed.push(rc);
     }
     function body(it, rhet) {
-      var full = isOpen(it.id + '#full'), txt = (it.short && !full) ? it.short : it.exp;
+      var full = rhet ? isOpen(it.id + '#full') : !isOpen(it.id + '#full'), txt   /* 學霸網：句意預設詳細版（老師 11/16），點「短」才收成短版 */ = (it.short && !full) ? it.short : it.exp;
       var h = rhet ? '<b>' + it.name + '</b>' + (txt && (GENERIC.indexOf(it.name) < 0 || full) ? '（' + String(txt).replace(/[。]$/, '') + '）' : '') : txt;
       if (it.short && it.exp) h += '<span class="tm-more" data-full="' + it.id + '">' + (full ? '短' : '詳') + '</span>';
       return h;
