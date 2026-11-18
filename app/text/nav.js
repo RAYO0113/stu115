@@ -23,5 +23,10 @@
     }).join('');
   }
   if (document.readyState !== 'loading') build(); else document.addEventListener('DOMContentLoaded', build);
-  window.addEventListener('load', build);   /* 作文教學外掛改過側欄後，再畫一次確保在 */
+  window.addEventListener('load', build);
+  /* 11/18：班級網頁「作文教學」卡連到 text/02/#zw=cold-full（或 arch-full）→ 載入後直接打開該科作文教學（zwOpen 在 dist/app.js 的作文教學外掛） */
+  window.addEventListener('load', function () {
+    var m = location.hash.match(/^#zw=((?:cold|arch)-full)$/);
+    if (m) setTimeout(function () { if (window.zwOpen) window.zwOpen(m[1]); }, 400);
+  });   /* 作文教學外掛改過側欄後，再畫一次確保在 */
 })();

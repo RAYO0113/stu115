@@ -112,6 +112,12 @@ body{color:var(--ink)}
 .empty i{display:block;font-size:34px;margin-bottom:6px;opacity:.7}
 /* 課文（10/20 起一課一課搬來，連到 text/<課號>/） */
 .lsn>.it{border-top:0;color:inherit;text-decoration:none}.lsn .chev{flex:none;color:var(--muted);font-size:20px}
+/* 課文分頁：作文教學卡、段考範圍框（11/18；段考日期來自 exam.js） */
+.ex-box{position:relative;margin:18px 12px 14px;padding:22px 0 2px;border:2px solid var(--red);border-radius:22px;background:rgba(168,42,42,.05)}
+.dark .ex-box{background:rgba(224,122,106,.08)}
+.ex-box .cd{margin:0 10px 10px}
+.ex-tag{position:absolute;top:-13px;left:18px;background:var(--red);color:#fff;font-size:13.5px;font-weight:500;padding:3px 14px;border-radius:99px;letter-spacing:.5px}
+.dark .ex-tag{color:var(--brown)}
 /* 小考與訂正（10/20 從舊班級網頁搬來）：點一筆展開題目、答案、訂正規則 */
 .qzr{border-top:1px solid var(--line)}.qzr:first-child{border-top:0}
 .qzr>.it{border-top:0;cursor:pointer}.qzr .chev{flex:none;color:var(--muted);font-size:20px;transition:transform .2s}.qzr.open .chev{transform:rotate(90deg)}
@@ -322,6 +328,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
         <div class="navbar navbar-large"><div class="navbar-bg"></div><div class="navbar-inner"><div class="title">課文</div><div class="title-large"><div class="title-large-text">課文</div></div></div></div>
         <div class="page-content">
           <div class="hero text fade"><div class="hi">課文筆記</div><div class="meta">筆記、習作、A卷之後會一課一課搬到這裡</div></div>
+          <div class="cd fade lsn" id="lszwcd"><a class="it external" id="lszw" href="text/02/"><div class="ic g"><i class="ti ti-writing"></i></div><div class="tx"><b>作文教學</b><span>作文四步驟投影片（完整版）</span></div><i class="ti ti-chevron-right chev"></i></a></div>
           <div class="cd fade lsn"><a class="it external" href="text/02/"><div class="ic g"><i class="ti ti-fish"></i></div><div class="tx"><b>第 1 課〈身為魚販〉</b><span>課文・注釋・修辭・習作・A卷・課後習題</span></div><i class="ti ti-chevron-right chev"></i></a></div>
           <div class="cd fade lsn"><a class="it external" href="text/05/"><div class="ic g"><i class="ti ti-messages"></i></div><div class="tx"><b>第 2 課〈世說新語選〉</b><span>課文・注釋・修辭・習作・A卷・課後習題</span></div><i class="ti ti-chevron-right chev"></i></a></div>
           <div class="cd fade lsn"><a class="it external" href="text/06/"><div class="ic g"><i class="ti ti-chalkboard"></i></div><div class="tx"><b>第 3 課〈師說〉</b><span>課文・注釋・修辭・習作・A卷・課後習題</span></div><i class="ti ti-chevron-right chev"></i></a></div>
@@ -371,6 +378,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/framework7@8.3.4/framework7-bundle.min.js"></script>
+<script src="exam.js?v=20261118"></script>
 <script>
 (function () {
   /* ── 設定 ── */
@@ -385,6 +393,33 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   function ssGet(k) { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }
   function ssSet(k, v) { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (e) {} }
   function $(id) { return document.getElementById(id); }
+  /* 11/18 段考範圍置頂：exam.js 的 STU_EXAMS（日期來自老師網站日曆）。找「最近一次還沒考完」的段考（今天 <= 最後一天），
+     有設定課次、且那幾課已有課文卡片才把卡片搬到作文卡下方、用框框起來；考完（今天 > 最後一天）自動恢復一般排序。 */
+  var exOrder = null;
+  window.stuExamApply = function () {
+    var pc = document.querySelector('#view-text .page-content'); if (!pc) return;
+    var cards = [].slice.call(pc.querySelectorAll('.cd.lsn')).filter(function (c) { return c.id !== 'lszwcd'; });
+    if (!exOrder) exOrder = cards; cards = exOrder;
+    var old = pc.querySelector('.ex-box'); if (old) old.parentNode.removeChild(old);
+    var zw = $('lszwcd'), ref = pc.querySelector('.empty').parentNode;   /* ref＝卡片後面的「其他課」提示 */
+    var d = new Date(), td = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    var ex = (window.STU_EXAMS || []).filter(function (e) { return td <= e.to; }).sort(function (a, b) { return a.from < b.from ? -1 : 1; })[0];
+    var inBox = [];
+    if (ex) (ex.les || []).forEach(function (no) {
+      var c = cards.filter(function (x) { var a = x.querySelector('a'), m = a && (a.getAttribute('href') || '').match(/text\/(\d+)(?:-\w+)?\//); return m && m[1] === no; })[0];   /* 冷一孝第 6 課卡片連到 01-xxxx，也算 01 */
+      if (c) inBox.push(c);
+    });
+    var rest = cards.filter(function (c) { return inBox.indexOf(c) < 0; });
+    var host = zw.parentNode;
+    if (inBox.length) {
+      var md = function (s) { return (+s.slice(5, 7)) + '/' + (+s.slice(8, 10)); };
+      var box = document.createElement('div'); box.className = 'ex-box';
+      box.innerHTML = '<div class="ex-tag">本次段考範圍（' + md(ex.from) + (ex.to !== ex.from ? '～' + md(ex.to) : '') + '）</div>';
+      inBox.forEach(function (c) { box.appendChild(c); });
+      host.insertBefore(box, zw.nextSibling);
+    }
+    rest.forEach(function (c) { host.insertBefore(c, ref); });
+  };
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var WD = '日一二三四五六';
   function parse(s) { var a = String(s).split('-'); return new Date(+a[0], +a[1] - 1, +a[2]); }
@@ -497,7 +532,12 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     /* 11/12 老師：第 6 課習作講解只推冷一孝 → 該班的第 6 課卡片連到含習作的版本（其他班照舊） */
     (function () { var l = $('lsn01'); if (!l) return; var w = me && me.cls === '冷一孝';
       l.setAttribute('href', w ? 'text/01-85829926/' : 'text/01/');
-      l.querySelector('span').textContent = w ? '課文・注釋・修辭・補充講義・習作講解' : '課文・注釋・修辭・補充講義'; })();
+      l.querySelector('span').textContent = w ? '課文・注釋・修辭・補充講義・習作講解' : '課文・注釋・修辭・習作・A卷・課後習題'; })();
+    /* 11/18：作文教學卡（依班級開對應科的完整版；班級不明就進課文頁自己選）＋段考範圍置頂 */
+    (function () { var z = $('lszw'); if (!z) return; var c = me && me.cls ? me.cls.charAt(0) : '', k = c === '冷' ? 'cold-full' : c === '建' ? 'arch-full' : '';
+      z.setAttribute('href', 'text/02/' + (k ? '#zw=' + k : ''));
+      z.querySelector('span').textContent = '作文四步驟投影片' + (k ? '（' + (k === 'cold-full' ? '冷凍空調科' : '建築科') + '・完整版）' : '（完整版）'); })();
+    stuExamApply();
     $('pvbar').innerHTML = me.preview ? '老師預覽：' + esc(me.cls + ' ' + me.seat + ' 號 ' + me.name) + '<a id="pvchg">換人</a>' : '';
     if (me.preview) $('pvchg').onclick = function () { ssSet(PV, ''); load(); };
     $('pvpick').innerHTML = '';
