@@ -6401,8 +6401,8 @@ body.dark-mode #rd-fs { background:#16130f; color:#eadfcb; }
 body.dark-mode #rd-fs .rd-bar button { background:transparent; color:#9cc0f0; border-color:#9cc0f0; }
 #rd-fs .rd-txt * { font-family:inherit; }   /* 注釋、出處也用同一字型 */
 /* 原文頁字型：源流明體 GenRyuMin2 TW（SIL OFL 1.1），字集＝全部課文資料用到的字（tools/make_font_subset_read.py）；只有原文頁用到，打開時才下載 */
-@font-face { font-family:"RayGenRyuRead"; src:url("../fonts/genryumin-read-r.woff2?v=cf110702") format("woff2"); font-weight:400; font-display:swap; }
-@font-face { font-family:"RayGenRyuRead"; src:url("../fonts/genryumin-read-b.woff2?v=53c3d319") format("woff2"); font-weight:700; font-display:swap; }
+@font-face { font-family:"RayGenRyuRead"; src:url("../fonts/genryumin-read-r.woff2?v=d5013e70") format("woff2"); font-weight:400; font-display:swap; }
+@font-face { font-family:"RayGenRyuRead"; src:url("../fonts/genryumin-read-b.woff2?v=1e9c0d20") format("woff2"); font-weight:700; font-display:swap; }
 /* V136 二改：一句原文＋一句語譯（語譯點開才顯示、不同顏色） */
 #rd-fs .rd-pair { margin:0 0 .35em; }
 #rd-fs .rd-pair.has-t .rd-o { cursor:pointer; }
@@ -6963,3 +6963,383 @@ body :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-keyrhet .dz-leg span { font-s
 .dz-s { color: #2e7d4f; font-weight: 700; }
 .dz-en { display: inline-block; margin-top: .25em; font-weight: 400; color: #4a4038; font-size: .92em; }
 .dz-en b { color: #c0392b; }
+/* ════ src/css/182_v240-l7-wide-css.css ════ */
+/* V240：〈長干行〉（老師 11/12）。只作用在這一課（body.l7-wide 由 188_v240-l7-tabs-js 加；l7- 開頭的元件只出現在這課題解區）。 */
+/* 課文詩句行距加寬，方便在投影上手寫 */
+body.l7-wide .tp-body .tp-line { margin-bottom: 72px; }
+
+/* 題解區：小標、跳轉按鈕、頁頂導覽 */
+.l7-sub { display: table; margin: .2em 0 .5em; padding: .15em .7em; border-radius: 4px; background: #8a3b2e; color: #fff; font-weight: 700; letter-spacing: .1em; }
+.l7-jump { display: flex; flex-wrap: wrap; gap: .5em; margin: .9em 0 1.4em; }
+.l7-nav { display: flex; flex-wrap: wrap; gap: .4em; margin: 0 0 .8em; }
+.l7-go { display: inline-block; cursor: pointer; padding: .2em .75em; margin: .15em .2em; border: 1.5px solid #b98b4e; border-radius: 999px; color: #7a4a14; background: #fbf4e6; font-size: .85em; text-decoration: none; white-space: nowrap; user-select: none; }
+.l7-go:hover { background: #f3e2c2; }
+.l7-jump .l7-go { font-size: 1em; padding: .35em 1em; background: #8a3b2e; border-color: #8a3b2e; color: #fff; font-weight: 700; }
+.l7-trb.on { background: #2d6b4f; border-color: #2d6b4f; color: #fff; }
+
+/* 收合區塊 */
+details.l7d { border: 1px solid #d9c7a3; border-radius: 8px; margin: .55em 0; background: #fffdf8; }
+details.l7d > summary { cursor: pointer; padding: .55em .9em; font-weight: 700; list-style: none; }
+details.l7d > summary::-webkit-details-marker { display: none; }
+details.l7d > summary::before { content: '▸'; display: inline-block; width: 1.1em; color: #b98b4e; transition: transform .15s; }
+details.l7d[open] > summary::before { transform: rotate(90deg); }
+details.l7d[open] > summary { border-bottom: 1px dashed #d9c7a3; }
+.l7d-b { padding: .7em 1em .9em; line-height: 1.9; }
+.l7-era { display: inline-block; min-width: 3.2em; margin-right: .5em; padding: 0 .4em; border-radius: 4px; background: #efe3cc; color: #6b4a1e; font-size: .85em; text-align: center; }
+table.l7t { border-collapse: collapse; width: 100%; }
+table.l7t th, table.l7t td { border: 1px solid #c9b99a; padding: .4em .6em; vertical-align: top; text-align: left; }
+table.l7t th { white-space: nowrap; background: #f6eedd; }
+
+/* 小封面 */
+.l7-cv-t { font-size: 2.4em; font-weight: 900; letter-spacing: .3em; color: #8a3b2e; text-align: center; margin: .2em 0 0; }
+.l7-cv-s { text-align: center; color: #8b7355; letter-spacing: .4em; margin-bottom: 1em; }
+#wkfs-body .l7-cover, #wk-slide-area .l7-cover { font-size: 1em; }   /* 11/12 老師：字太小 → 不再縮小 */
+.l7-cover { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .8em; align-items: start; }
+.l7-cover .l7-cv-t, .l7-cover .l7-cv-s { grid-column: 1 / -1; }
+.l7-cover .l7-cv-t { font-size: 1.8em; }
+.l7-cover .l7-cv-s { margin-bottom: .4em; }
+.l7-cover details.l7d { margin: .3em 0; font-size: .95em; }
+.l7-cover details.l7d > summary { padding: .35em .7em; }
+.l7-cover .l7d-b { padding: .35em .6em .5em; line-height: 1.7; }
+.l7-cover .l7-go { font-size: 1em; padding: .1em .6em; margin: .12em .15em; }
+.l7-go { font-size: .95em; }
+.l7-era { font-size: .95em; }
+.l7-who, .l7-note { font-size: 1em; }
+@media (max-width: 700px) { .l7-cover { grid-template-columns: 1fr; } }
+.l7-cover .l7-anim-row { grid-column: 1 / -1; justify-content: center; margin: .2em 0 .6em; }
+/* 流變動畫蓋版 */
+#l7-anim { position: fixed; inset: 0; z-index: 2147483647; background: #F4F0E7; }
+#l7-anim iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+/* 代表作：原文分段、翻譯（按「翻譯」才出現） */
+.l7-who { color: #8b7355; margin-bottom: .4em; }
+.l7-note { font-size: .85em; color: #8b7355; background: #f6eedd; padding: .3em .7em; border-radius: 6px; margin-bottom: .6em; }
+.l7-st { margin: 0 0 1.6em; }
+.l7-o { font-size: 1.25em; line-height: 2.1; letter-spacing: .06em; }
+.l7-o.l7-pre { font-size: 1em; color: #6b5a44; }
+.l7-y { display: none; margin-top: .4em; padding: .5em .9em; border-left: 4px solid #2d6b4f; background: #f1f7f3; color: #24563f; line-height: 1.85; font-size: .95em; }
+.l7-y.show { display: block; }
+.l7-nav-end { margin: 1.4em 0 .4em; padding-top: .8em; border-top: 1px dashed #d9c7a3; justify-content: center; }
+/* ════ src/css/183_v243-wk-split-css.css ════ */
+/* V243 習作選擇題一題一頁：標題列後的題號（同 A卷「第 N 題 / 共 M 題」位置） */
+.wks-wq1 .wk-qpos{margin-left:12px;padding:2px 10px;border-radius:999px;background:rgba(0,0,0,.06);font-size:.8em;font-weight:700;white-space:nowrap}
+body.dark-mode .wks-wq1 .wk-qpos{background:rgba(255,255,255,.12)}
+/* ════ src/css/184_v245-jiayi-css.css ════ */
+/* V245 甲乙丙丁題：一項一行；有詳解的項目點了在下方打開（老師 11/13） */
+.jy4{display:block}
+.jy4-pre{margin-bottom:6px}
+.jy4-l{display:block;padding:4px 10px 4px 2.4em;text-indent:-2.4em;margin:3px 0;border-radius:8px;line-height:1.6}
+.jy4-l.has{cursor:pointer}
+.jy4-l.has:hover{background:rgba(154,74,38,.07)}
+.jy4-m{display:inline-block;width:2.4em;text-indent:0;font-weight:700;color:#9a4a26}
+.jy4-l.has>.jy4-t::after{content:"▸";font-size:.7em;color:#b08a60;margin-left:.4em}
+.jy4-l.has.jy4-on>.jy4-t::after{content:"▾"}
+.jy4-x{display:none;text-indent:0;margin:5px 0 3px;padding:6px 12px;background:#f5ede2;border-left:4px solid #c08a4a;border-radius:6px;font-size:.86em;line-height:1.65;color:#4a3c31;font-weight:400}
+.jy4-on>.jy4-x{display:block}
+.jy4-lab{display:inline-block;font-size:.8em;font-weight:700;color:#fff;background:#8a6d4a;border-radius:4px;padding:0 6px;margin-right:6px}
+.jy4-tail{margin-top:6px}
+body.dark-mode .jy4-m{color:#e59a6d}
+body.dark-mode .jy4-x{background:#342b24;color:#e3d7c9;border-left-color:#8a6a48}
+body.dark-mode .jy4-l.has:hover{background:rgba(229,154,109,.1)}
+/* V246 文章裡的甲乙丙：選項詳解一項一行 */
+.jy4-xl{display:block;padding-left:2.4em;text-indent:-2.4em;margin:3px 0}
+.jy4-xl .jy4-m{width:2.4em}
+.jy4-xr{margin-top:4px}
+/* ════ src/css/185_v247-l7-apple-css.css ════ */
+/* V247：〈長干行〉題解區按鈕改版（老師 11/13：長條圓框突兀、不好看，參考蘋果美學）
+   - 拿掉膠囊框：連結改成「純文字＋主題色」，像 iOS 的文字按鈕
+   - 題解頁的「去樂府詩／詩的流變／樂府與古詩」：改成 iOS 設定頁那種白底圓角清單，一列一項、右邊 ›
+   - 收合區：白底圓角卡片＋極淡陰影，箭頭改到右邊的 ›，打開時轉向下
+   - 「翻譯」：淡色底的圓角小按鈕，打開時填滿
+   只覆蓋 182_v240-l7-wide-css 的外觀，不刪舊檔 */
+:root { --l7-tint: #a0432c; --l7-ink: #2b2420; --l7-mute: #8e8378; --l7-card: #fff; --l7-sep: rgba(60, 40, 20, .12); }
+body.dark-mode { --l7-tint: #e8957a; --l7-ink: #eee6dc; --l7-mute: #a99d90; --l7-card: #2a2622; --l7-sep: rgba(255, 255, 255, .12); }
+
+/* 文字按鈕（取代膠囊） */
+.l7-go, .l7-cover .l7-go, .l7-jump .l7-go {
+  border: 0; background: none; border-radius: 8px; color: var(--l7-tint); font-weight: 600;
+  padding: .12em .35em; margin: 0 .15em; font-size: 1em; transition: background .15s, opacity .15s;
+}
+.l7-go:hover { background: color-mix(in srgb, var(--l7-tint) 9%, transparent); }
+.l7-go:active { opacity: .55; }
+
+/* 頁頂／頁底導覽：一行輕量文字，中間以細點分隔 */
+.l7-nav { gap: 0; align-items: center; font-size: .9em; margin: 0 0 1em; }
+.l7-nav .l7-go + .l7-go::before { content: none; }
+.l7-nav .l7-all { margin-left: auto; color: var(--l7-mute); font-weight: 500; }
+.l7-nav-end { border-top: .5px solid var(--l7-sep); padding-top: 1em; margin-top: 2em; justify-content: center; }
+
+/* 翻譯：淡底圓角，打開時填滿 */
+.l7-nav .l7-trb { margin-left: auto; padding: .25em .9em; border-radius: 9px; background: color-mix(in srgb, var(--l7-tint) 10%, transparent); color: var(--l7-tint); }
+.l7-nav .l7-trb.on { background: var(--l7-tint); color: #fff; }
+
+/* 題解頁的跳轉：iOS 白底圓角清單 */
+.l7-jump:not(.l7-anim-row) { display: block; gap: 0; margin: 1em 0 1.6em; background: var(--l7-card); border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 .5px var(--l7-sep), 0 2px 8px rgba(60, 40, 20, .06); }
+.l7-jump:not(.l7-anim-row) .l7-go { display: flex; justify-content: space-between; align-items: center; margin: 0; padding: .7em 1.1em; border-radius: 0; color: var(--l7-ink); background: none; font-weight: 600; white-space: normal; }
+.l7-jump:not(.l7-anim-row) .l7-go + .l7-go { box-shadow: inset 0 .5px 0 var(--l7-sep); }
+.l7-jump:not(.l7-anim-row) .l7-go::after { content: '›'; color: var(--l7-mute); font-size: 1.3em; line-height: 1; font-weight: 400; }
+.l7-jump:not(.l7-anim-row) .l7-go:hover { background: color-mix(in srgb, var(--l7-tint) 6%, transparent); }
+
+/* 流變小封面的動畫按鈕：唯一的主要動作，用實心圓角矩形 */
+.l7-anim-row .l7-go { background: var(--l7-tint); color: #fff; border-radius: 12px; padding: .5em 1.4em; }
+.l7-anim-row .l7-go:hover { background: var(--l7-tint); opacity: .88; }
+
+/* 收合區：白底圓角卡片，箭頭在右 */
+details.l7d { border: 0; border-radius: 12px; background: var(--l7-card); box-shadow: 0 0 0 .5px var(--l7-sep), 0 1px 4px rgba(60, 40, 20, .05); margin: .6em 0; overflow: hidden; }
+details.l7d > summary { display: flex; align-items: center; gap: .3em; padding: .65em 1.1em; }
+details.l7d > summary::before { content: none; }
+details.l7d > summary::after { content: '›'; margin-left: auto; color: var(--l7-mute); font-size: 1.3em; line-height: 1; font-weight: 400; transition: transform .2s; }
+details.l7d[open] > summary::after { transform: rotate(90deg); }
+details.l7d[open] > summary { border-bottom: .5px solid var(--l7-sep); }
+.l7-cover details.l7d > summary { padding: .45em .9em; }
+
+/* 年代標籤：淡底、不加框 */
+.l7-era { border-radius: 6px; }
+
+/* 老師 11/13：「詩的流變：從《詩經》到新詩」頁左右還能滑 → 內容其實沒有超寬，是 iPad 觸控的左右回彈；
+   這一課（body.l7-wide）的頁面只准上下捲 */
+body.l7-wide .wk-slide { overflow-x: hidden; overscroll-behavior-x: none; touch-action: pan-y pinch-zoom; }
+body.l7-wide #wk-slide-area, body.l7-wide #wkfs-body { overflow-x: hidden; overscroll-behavior-x: none; }
+
+/* 老師 11/13：點開來的答案字色要和題目不一樣 → 標題維持深色，展開內容改深藍；重點字（wk-a）維持原本標色 */
+:root { --l7-ans: #1d4f86; }
+body.dark-mode { --l7-ans: #8cc0f0; }
+details.l7d > summary { color: var(--l7-ink); }
+details.l7d > .l7d-b { color: var(--l7-ans); }
+details.l7d > .l7d-b th { color: var(--l7-ink); }
+
+/* V248（老師 11/13）：〈長干行〉整課改源流明體（RayGenRyuRead，字集見 tools/make_font_subset_read.py；只有這課打開才下載） */
+body.l7-wide #wk-slide-area .wk-slide, body.l7-wide #wk-slide-area .wk-slide *,
+body.l7-wide #wkfs-body .wk-slide, body.l7-wide #wkfs-body .wk-slide * { font-family: "RayGenRyuRead", "Noto Serif TC", serif !important; }
+/* ════ src/css/186_v249-graytext-css.css ════ */
+/* V249（2026-11-13）投影頁內文改鐵灰（老師指示）
+   範圍：所有投影頁（課文、作者、題解、段旨、結構表、修辭、習作、測驗…）與注釋浮框。
+   不改：各頁標題（下方還原清單）、頁首「瑞媛的國文教學」、左側課文清單、右側籤頁；深色模式不動。 */
+body:not(.dark-mode) .wk-slide,
+body:not(.dark-mode) .tp-panel {
+  --mk-ink-deep: #3a3f45;
+  --mk-ink:      #555b62;
+  --ink:         #3a3f45;
+  --l7-ink:      #3a3f45;   /* 〈長干行〉等新版頁面（可展開小項、表頭、連結） */
+  color:         #3a3f45;   /* 沒有自己顏色、從外層繼承的文字（如注釋欄） */
+}
+body:not(.dark-mode) .wk-slide .tp-ruby-book { color: #3a3f45; }
+
+/* 標題維持原色 */
+body:not(.dark-mode) .wk-slide :is(.tp-title, .wks-info-head, .wks-st-title, .hd-title, .wk-head, .as-title, .jy-sub, .wk-ao-subhead) {
+  --mk-ink-deep: #211710;
+  --mk-ink:      #33271a;
+  --ink:         #1a1209;
+  --l7-ink:      #2b2420;
+}
+/* ════ src/css/187_v250-l7-flat-css.css ════ */
+/* V250（老師 11/13 晚）：〈長干行〉樂府詩各頁
+   - 不要點來點去：內容全部直接展開（div.l7b 取代收合的 details），按下一頁往下講
+   - 時代大字、各時代各自顏色（.l7-erab，顏色寫在資料的 --ec）
+   - 架構＝旁邊縮小的結構圖（div.l7-map），標出現在講到哪一節
+   - 樂府詩封面：一二三四五六由上往下一欄排（原本兩欄 → 變成左右左右跳）
+   只加不刪：182／185 的舊樣式保留，這裡覆蓋 */
+
+/* 版面：左內容、右結構圖 */
+.l7-lf { display: grid; grid-template-columns: minmax(0, 1fr) 10.5em; gap: 0 1.1em; align-items: start; }
+.l7-lf-main { min-width: 0; }
+@media (max-width: 700px) { .l7-lf { grid-template-columns: 1fr; } .l7-map { display: none; } }
+
+/* 展開的內容區塊 */
+.l7b { margin: 0 0 1.1em; padding: 0 0 .9em; border-bottom: .5px solid var(--l7-sep); }
+.l7b:last-child { border-bottom: 0; }
+.l7b-h { font-weight: 800; color: var(--l7-ink); font-size: 1.08em; margin: 0 0 .35em; }
+.l7b-b { color: var(--l7-ans); line-height: 1.85; }
+.l7b-b th { color: var(--l7-ink); }
+.l7-wk { color: var(--l7-ans); font-weight: 700; }
+
+/* 時代：大字＋各自顏色 */
+.l7-erab { display: inline-block; margin: 0 .12em; padding: 0 .3em; font-size: 1.45em; font-weight: 900; line-height: 1.2; letter-spacing: .06em; color: var(--ec); border-bottom: 4px solid color-mix(in srgb, var(--ec) 35%, transparent); }
+body.dark-mode .l7-erab { color: color-mix(in srgb, var(--ec) 55%, #fff); }
+table.l7t .l7-erab { font-size: 1.15em; border-bottom-width: 3px; }
+
+/* 旁邊的小結構圖 */
+.l7-map { position: sticky; top: .5em; font-size: .76em !important; line-height: 1.45; padding: .7em .8em; border-radius: 12px; background: var(--l7-card); box-shadow: 0 0 0 .5px var(--l7-sep); color: var(--l7-mute); }
+.l7-map-s { padding: .25em .4em; border-radius: 6px; position: relative; }
+.l7-map-s + .l7-map-s, .l7-map-i + .l7-map-s { margin-top: .5em; }
+.l7-map-s:not(:last-of-type)::after { content: '↓'; position: absolute; left: 50%; bottom: -1.05em; font-size: .8em; opacity: .5; }
+.l7-map-s.on { background: var(--l7-tint); color: #fff; font-weight: 800; }
+.l7-map-s.on::after { color: var(--l7-mute); }
+.l7-map-i { margin: .3em 0 .2em .5em; padding-left: .5em; border-left: 2px solid var(--l7-tint); color: var(--l7-ink); }
+.l7-map-i span { display: block; }
+
+/* 樂府詩封面：一欄、由上往下 */
+.l7-cover.l7-cover-1 { display: block; }
+.l7-tree { max-width: 34em; margin: 0 auto; }
+.l7-tree-s { position: relative; background: var(--l7-card); border-radius: 12px; box-shadow: 0 0 0 .5px var(--l7-sep), 0 1px 4px rgba(60, 40, 20, .05); padding: .5em 1em; margin: 0 0 1.1em; }
+.l7-tree-s:not(:last-child)::after { content: '↓'; position: absolute; left: 50%; bottom: -1.05em; transform: translateX(-50%); color: var(--l7-mute); font-size: .9em; }
+.l7-tree-t { font-weight: 800; color: var(--l7-tint); }
+.l7-tree-i { color: var(--l7-ink); font-size: .85em; }
+.l7-tree-i span + span::before { content: '・'; color: var(--l7-mute); }
+
+/* 比較表頁有旁邊結構圖 → 欄名不要被擠成直排 */
+:is(#wk-fullscreen, #wkfs-body, #wk-slide-area, .wk-slide-area) .l7-lf table.l7t th { white-space: nowrap !important; }
+
+/* 11/13 晚 老師：旁邊結構圖沒必要 → 資料已拿掉，內容改全寬 */
+.l7-lf { display: block; }
+
+/* 11/13 晚 老師：①朝代顏色統一、用背景底色區分時代 ②內文要鐵灰（V249），不要藍色 */
+.l7-erab { color: #fff; background: var(--l7-tint); border-bottom: 0; border-radius: 8px; padding: .02em .4em; margin: 0 .2em; }
+body.dark-mode .l7-erab { color: #2a2622; background: var(--l7-tint); }
+table.l7t .l7-erab { padding: 0 .3em; }
+.l7b-b, .l7-wk { color: var(--l7-ink); }
+
+/* 11/13 晚 老師：代表作點開＝統一大小浮框；可點的作品名用紫色字 */
+:root { --l7-click: #6b3fa0; }
+body.dark-mode { --l7-click: #c3a3ec; }
+a.l7-go.l7-wkl, :is(#wkfs-body, #wk-slide-area) a.l7-go.l7-wkl { color: var(--l7-click) !important; font-weight: 800; padding: 0 .1em; margin: 0; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: .2em; }
+#l7-pop { position: fixed; inset: 0; z-index: 2147483000; background: rgba(30, 24, 18, .45); display: flex; align-items: center; justify-content: center; }
+#l7-pop .l7p-box { width: min(92vw, 980px); height: 84vh; display: flex; flex-direction: column; background: #fffdf8; color: #3a3f45; border-radius: 16px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); overflow: hidden;
+  font-family: "RayGenRyuRead", "Noto Serif TC", serif; font-size: clamp(20px, 2.5vw, 30px); }
+body.dark-mode #l7-pop .l7p-box { background: #2a2622; color: #eee6dc; }
+#l7-pop .l7p-top { display: flex; align-items: center; gap: .5em; padding: .5em .9em; border-bottom: 1px solid rgba(60, 40, 20, .15); }
+#l7-pop .l7p-title { font-size: 1.15em; color: #a0432c; }
+#l7-pop .l7p-sp { flex: 1; }
+#l7-pop button { font: inherit; font-size: .8em; cursor: pointer; border: 0; border-radius: 10px; padding: .25em .9em; background: rgba(160, 67, 44, .1); color: #a0432c; }
+#l7-pop .l7p-tr.on { background: #a0432c; color: #fff; }
+#l7-pop .l7p-body { flex: 1; overflow-y: auto; padding: .7em 1.1em 1.2em; }
+#l7-pop .l7p-body .l7-o { font-size: 1.1em; }
+
+/* 11/13 晚 老師：新樂府運動精神、理論的重要句換色 */
+:root { --l7-key: #17675a; }
+body.dark-mode { --l7-key: #7fd6c4; }
+.l7-key { color: var(--l7-key); font-weight: 800; background: color-mix(in srgb, var(--l7-key) 10%, transparent); border-radius: 4px; padding: 0 .12em; }
+
+/* 11/13 晚 老師：補充講義有相似概念的 → 右上浮框標補充講義頁碼（class 含 -tag，字級不被整課統一規則蓋掉） */
+.l7-hp-tag { float: right; margin: 0 0 .3em .6em; padding: .12em .65em; font-size: .72em; font-weight: 700; color: #7a5a1e; background: #fff6df; border: 1.5px solid #d9b56a; border-radius: 999px; box-shadow: 0 1px 3px rgba(60, 40, 20, .12); white-space: nowrap; }
+body.dark-mode .l7-hp-tag { color: #f0d9a6; background: #3a3020; border-color: #8a7040; }
+/* ════ src/css/192_v251-l7-guofeng-css.css ════ */
+/* V251（老師 11/13）：〈長干行〉補充頁外觀
+   - 題解／詩的流變／樂府詩／代表作各頁：宣紙底＋頁底遠山、朱印時代、筆觸分隔線、線裝書風表格
+   - 發展頁點代表作、封面的「樂府長卷」→ 開 yf/index.html（互動版，193_v251-l7-guofeng-js）
+   只加不刪：182／185／187 的舊樣式保留，這裡覆蓋。內文、標題仍是源流明體（老師 11/13 定）。
+   老師 11/13：不要標楷體 → 全部維持源流明體（--gf-kai 現在就是明體；想試書法字，在樂府長卷的讀詩模式按「書法」）。 */
+:root {
+  --gf-kai: "RayGenRyuRead", "Noto Serif TC", serif;
+  --gf-paper: #f5ecd8; --gf-paper-hi: #fbf5e6; --gf-ink: #2b2622; --gf-zhu: #a8352a; --gf-zhu-d: #7f241c; --gf-gold: #b08d57; --gf-brown: #6b4a2b;
+  --gf-line: rgba(107, 74, 43, .3); --gf-card: rgba(255, 252, 243, .72);
+  --gf-yi-bd: #5d7a5f; --gf-yi-bg: rgba(93, 122, 95, .1); --gf-yi-ink: #2f4a35;
+  /* 宣紙纖維（細點＋橫向纖維）、水墨遠山（上濃下淡，山腳化成霧） */
+  --gf-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .33 0 0 0 0 .18 0 0 0 .55 -.2'/%3E%3C/filter%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .5' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .38 0 0 0 0 .22 0 0 0 .34 -.14'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --gf-mount: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 320' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='3'/%3E%3C/filter%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23403a34' stop-opacity='.5'/%3E%3Cstop offset='1' stop-color='%23403a34' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath filter='url(%23b)' fill='url(%23g)' opacity='.5' d='M0 210C80 150 140 190 220 120C270 80 310 150 380 130C450 110 500 40 560 90C620 140 680 110 760 150C840 190 900 100 980 130C1060 160 1120 120 1200 170L1200 320L0 320Z'/%3E%3Cpath filter='url(%23b)' fill='url(%23g)' d='M0 270C90 230 150 250 240 200C300 170 350 230 430 215C520 200 560 150 640 190C720 230 800 215 880 240C960 265 1040 205 1120 225C1160 235 1180 245 1200 250L1200 320L0 320Z'/%3E%3C/svg%3E");
+}
+body.dark-mode {
+  --gf-paper: #25211c; --gf-paper-hi: #2e2923; --gf-ink: #ece2d0; --gf-zhu: #c9523f; --gf-zhu-d: #e0806c; --gf-gold: #c9a970; --gf-brown: #cdb592;
+  --gf-line: rgba(236, 226, 208, .22); --gf-card: rgba(255, 245, 225, .05);
+  --gf-yi-bd: #7fae86; --gf-yi-bg: rgba(127, 174, 134, .12); --gf-yi-ink: #bfe0c4;
+  /* 深色：纖維改淺色細點、不要橫向纖維（深底上會看到接縫） */
+  --gf-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .9 0 0 0 0 .85 0 0 0 0 .75 0 0 0 .4 -.17'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --gf-mount: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 320' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='3'/%3E%3C/filter%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23e8dcc6' stop-opacity='.3'/%3E%3Cstop offset='1' stop-color='%23e8dcc6' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath filter='url(%23b)' fill='url(%23g)' opacity='.5' d='M0 210C80 150 140 190 220 120C270 80 310 150 380 130C450 110 500 40 560 90C620 140 680 110 760 150C840 190 900 100 980 130C1060 160 1120 120 1200 170L1200 320L0 320Z'/%3E%3Cpath filter='url(%23b)' fill='url(%23g)' d='M0 270C90 230 150 250 240 200C300 170 350 230 430 215C520 200 560 150 640 190C720 230 800 215 880 240C960 265 1040 205 1120 225C1160 235 1180 245 1200 250L1200 320L0 320Z'/%3E%3C/svg%3E");
+}
+
+/* ══════════ 補充頁（題解／詩的流變／樂府詩／代表作） ══════════ */
+/* 宣紙底＋頁底遠山（背景貼在頁框上，內容捲動時山不動） */
+body.l7-wide :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-info-intro {
+  /* 全站 .wks-info 的底色是 !important → 這裡也要 */
+  background-color: var(--gf-paper) !important; background-image: var(--gf-mount), var(--gf-noise) !important;
+  background-repeat: no-repeat, repeat !important; background-position: bottom center, 0 0 !important; background-size: 100% 26%, 240px 240px !important; background-attachment: scroll !important; }
+
+/* 小標（樂府詩簡介／題解）：朱色楷體＋朱條＋淡出的線 */
+body.l7-wide .wk-slide.wks-info-intro .l7-sub { display: flex; align-items: center; gap: .5em; margin: .2em 0 .55em; padding: 0; background: none; border-radius: 0; color: var(--gf-zhu); font-weight: 700; letter-spacing: .2em; }
+body.l7-wide .wk-slide.wks-info-intro .l7-sub::before { content: ''; flex: none; width: .4em; height: 1.2em; border-radius: 2px; background: var(--gf-zhu); }
+body.l7-wide .wk-slide.wks-info-intro .l7-sub::after { content: ''; flex: 1; min-width: 2em; height: 2px; background: linear-gradient(90deg, var(--gf-zhu), transparent); opacity: .45; }
+
+/* 展開的內容區塊：筆觸分隔線、楷體標題＋朱點 */
+body.l7-wide .wk-slide.wks-info-intro .l7b { position: relative; border-bottom: 0; margin: 0 0 1em; padding: 0 0 1em; }
+body.l7-wide .wk-slide.wks-info-intro .l7b:not(:last-child)::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 50%;
+  background: linear-gradient(90deg, transparent, var(--gf-line) 10%, var(--gf-line) 55%, transparent 92%); }
+body.l7-wide .wk-slide.wks-info-intro .l7b-h { color: var(--gf-ink); letter-spacing: .06em; margin: 0 0 .3em; }
+body.l7-wide .wk-slide.wks-info-intro .l7b-h::before { content: ''; display: inline-block; width: .42em; height: .42em; margin: 0 .45em .16em .05em; vertical-align: middle; background: var(--gf-zhu); transform: rotate(45deg); border-radius: 1px; }
+body.l7-wide .wk-slide.wks-info-intro .l7b-b { line-height: 1.9; }
+
+/* 時代：朱文印 */
+body.l7-wide .wk-slide.wks-info-intro .l7-erab { color: #fbefdc; background: linear-gradient(135deg, #b83f31, #98291f); border-radius: 5px 8px 4px 9px; padding: .04em .42em .02em; margin: 0 .22em; letter-spacing: .12em;
+  box-shadow: inset 0 0 0 2px rgba(251, 239, 220, .5), 0 1px 2px rgba(0, 0, 0, .22); }
+body.dark-mode.l7-wide .wk-slide.wks-info-intro .l7-erab { color: #fbefdc; background: linear-gradient(135deg, #b83f31, #98291f); }
+
+/* 表格：線裝書風（外框雙線、欄名淡朱底） */
+body.l7-wide .wk-slide.wks-info-intro table.l7t { border: 3px double var(--gf-brown); background: var(--gf-card); }
+body.l7-wide .wk-slide.wks-info-intro table.l7t th, body.l7-wide .wk-slide.wks-info-intro table.l7t td { border: 1px solid var(--gf-line); padding: .42em .7em; }
+body.l7-wide .wk-slide.wks-info-intro table.l7t th { background: rgba(168, 53, 42, .09); color: var(--gf-zhu-d); letter-spacing: .05em; }
+
+/* 補充講義頁碼：小籤條 */
+body.l7-wide .wk-slide.wks-info-intro .l7-hp-tag { border-radius: 3px; border: 1px solid var(--gf-gold); background: var(--gf-paper-hi); color: var(--gf-brown); box-shadow: 1px 2px 0 rgba(107, 74, 43, .12); letter-spacing: .05em; }
+
+/* 封面：楷體大題＋兩側淡線；結構卡＝宣紙卡＋朱邊 */
+body.l7-wide .wk-slide.wks-info-intro .l7-cv-t { display: flex; align-items: center; justify-content: center; gap: .6em; color: var(--gf-ink); letter-spacing: .35em; text-indent: .35em; margin: .1em 0 0; font-weight: 900; }
+body.l7-wide .wk-slide.wks-info-intro .l7-cv-t::before, body.l7-wide .wk-slide.wks-info-intro .l7-cv-t::after { content: ''; width: 3.2em; height: 2px; background: linear-gradient(90deg, transparent, var(--gf-zhu)); opacity: .6; }
+body.l7-wide .wk-slide.wks-info-intro .l7-cv-t::after { transform: scaleX(-1); }
+body.l7-wide .wk-slide.wks-info-intro .l7-cv-s { color: var(--gf-brown); letter-spacing: .5em; text-indent: .5em; margin-bottom: .8em; }
+body.l7-wide .wk-slide.wks-info-intro .l7-tree-s { background: var(--gf-card); border-radius: 4px; border-left: 5px solid var(--gf-zhu); box-shadow: 0 0 0 1px var(--gf-line), 2px 3px 0 rgba(107, 74, 43, .08); padding: .45em 1em .5em; }
+body.l7-wide .wk-slide.wks-info-intro .l7-tree-t { color: var(--gf-zhu-d); letter-spacing: .08em; }
+body.l7-wide .wk-slide.wks-info-intro .l7-tree-s:not(:last-child)::after { color: var(--gf-brown); opacity: .6; }
+
+/* 跳轉清單、收合卡：宣紙卡 */
+body.l7-wide .wk-slide.wks-info-intro .l7-jump:not(.l7-anim-row) { background: var(--gf-card); border-radius: 6px; box-shadow: 0 0 0 1px var(--gf-line), 2px 3px 0 rgba(107, 74, 43, .08); }
+body.l7-wide .wk-slide.wks-info-intro .l7-jump:not(.l7-anim-row) .l7-go { color: var(--gf-ink); }
+body.l7-wide .wk-slide.wks-info-intro .l7-jump:not(.l7-anim-row) .l7-go + .l7-go { box-shadow: inset 0 1px 0 var(--gf-line); }
+body.l7-wide .wk-slide.wks-info-intro .l7-jump:not(.l7-anim-row) .l7-go::after { color: var(--gf-zhu); }
+body.l7-wide .wk-slide.wks-info-intro .l7-anim-row .l7-go { background: linear-gradient(135deg, #b83f31, #98291f); color: #fbefdc; border-radius: 6px 9px 5px 10px; padding: .5em 1.5em; letter-spacing: .12em; box-shadow: inset 0 0 0 2px rgba(251, 239, 220, .5), 0 2px 5px rgba(0, 0, 0, .25); }
+body.l7-wide .wk-slide.wks-info-intro details.l7d { background: var(--gf-card); border-radius: 5px; box-shadow: 0 0 0 1px var(--gf-line), 2px 3px 0 rgba(107, 74, 43, .07); }
+body.l7-wide .wk-slide.wks-info-intro details.l7d[open] > summary { border-bottom: 1px solid var(--gf-line); background: rgba(168, 53, 42, .05); }
+body.l7-wide .wk-slide.wks-info-intro details.l7d > summary::after { color: var(--gf-zhu); }
+body.l7-wide .wk-slide.wks-info-intro .l7-era { background: none; color: var(--gf-zhu-d); border: 1px solid var(--gf-zhu); border-radius: 3px; letter-spacing: .08em; }
+
+/* 代表作頁：作者行、說明、原文（楷體）、翻譯 */
+body.l7-wide .wk-slide.wks-info-intro .l7-who { color: var(--gf-brown); letter-spacing: .12em; }
+body.l7-wide .wk-slide.wks-info-intro .l7-note { background: rgba(107, 74, 43, .08); color: var(--gf-brown); border-radius: 4px; }
+body.l7-wide .wk-slide.wks-info-intro .l7-o:not(.l7-pre) { letter-spacing: .12em; color: var(--gf-ink); font-weight: 700; }
+body.l7-wide .wk-slide.wks-info-intro .l7-o.l7-pre { color: var(--gf-brown); border-left: 3px solid var(--gf-gold); padding-left: .8em; }
+body.l7-wide .wk-slide.wks-info-intro .l7-y { border-left: 4px solid var(--gf-yi-bd); border-radius: 0 6px 6px 0; background: var(--gf-yi-bg); color: var(--gf-yi-ink); }
+
+/* 楷體：封面大題、代表作原文（蓋過 185 的整課明體；其餘仍是明體） */
+body.l7-wide :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-info-intro :is(.l7-cv-t, .l7-cv-s, .l7-o:not(.l7-pre), .l7-o:not(.l7-pre) *) { font-family: var(--gf-kai) !important; }
+/* 字級：整課統一規則（168_v194）會把沒有 -tag／title／head 的字級壓回一樣大 → 這幾個用更高權重放大 */
+body.l7-wide :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-info.wks-info-intro .l7-sub { font-size: 1.15em !important; }
+body.l7-wide :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-info.wks-info-intro .l7b-h { font-size: 1.12em !important; }
+body.l7-wide :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-info.wks-info-intro .l7-cv-t { font-size: 2.3em !important; }
+body.l7-wide :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-info.wks-info-intro .l7-tree-t { font-size: 1.08em !important; }
+body.l7-wide :is(#wkfs-body, #wk-slide-area) .wk-slide.wks-info.wks-info-intro .l7-o:not(.l7-pre) { font-size: 1.25em !important; }
+
+/* 樂府詩封面的「樂府長卷」入口（193 的程式插入） */
+body.l7-wide .wk-slide.wks-info-intro .l7-yf-row { display: flex; justify-content: center; margin: .2em 0 1em; }
+body.l7-wide .wk-slide.wks-info-intro .l7-yf-row a { cursor: pointer; background: linear-gradient(135deg, #b83f31, #98291f); color: #fbefdc; font-weight: 700; border-radius: 6px 9px 5px 10px; padding: .5em 1.6em; letter-spacing: .14em; box-shadow: inset 0 0 0 2px rgba(251, 239, 220, .5), 0 2px 6px rgba(0, 0, 0, .25); }
+/* ════ src/css/193_v254-yf-inline-css.css ════ */
+/* V254：〈長干行〉樂府長卷直接放在課文頁（JS 在 194_v254-yf-inline-js）
+   頁面上只留一個空位 .wk-yf-slot，長卷 iframe 對齊蓋在空位上（一般畫面掛 body、投影掛 #wk-fullscreen，在畫記層下面） */
+#wk-slide-area .wk-yf-slide { padding: 0 !important; background: none !important; box-shadow: none !important; border: 0 !important; }
+#wk-slide-area .wk-yf-slot { height: calc(100vh - 150px); min-height: 460px; }
+#wkfs-body .wk-yf-slide { padding: 0 !important; background: none !important; }
+iframe.wk-yf-frame { position: absolute; display: none; border: 0; margin: 0; padding: 0; z-index: 4; background: #F4F0E7; border-radius: 6px; }
+#wk-fullscreen > iframe.wk-yf-frame { z-index: 5; border-radius: 0; }
+/* ════ src/css/194_v259-proj-wall-css.css ════ */
+/* V259（老師 11/16）成績投影：考卷卡片牆＋全班總覽。顏色沿用成績系統原有的紅 #b03a2e、綠 #2f7d43、藍 #2e5a7a。 */
+#v106-gr .gr-wsum { font-size:18px; margin:6px 0 12px; }
+#v106-gr .gr-wall { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
+#v106-gr .gr-wc { display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left; font:inherit; cursor:pointer;
+  border:1px solid var(--border,#d4c4a8); border-left:8px solid #b9ad98; border-radius:6px; background:var(--surface,#fff); color:var(--ink,#1a1209); padding:10px 12px 12px; min-height:128px; }
+#v106-gr .gr-wc .t { font-size:17px; font-weight:700; line-height:1.35; }
+#v106-gr .gr-wc .d { font-size:13px; color:var(--muted,#7a6a55); }
+#v106-gr .gr-wc .v { font-size:32px; font-weight:700; line-height:1.25; margin-top:auto; }
+#v106-gr .gr-wc .s { font-size:14px; color:var(--muted,#7a6a55); min-height:18px; }
+#v106-gr .gr-wc.miss { border-color:#b03a2e; border-left-color:#b03a2e; background:rgba(176,58,46,.07); }
+#v106-gr .gr-wc.miss .v, #v106-gr .gr-wc.miss .s { color:#b03a2e; }
+#v106-gr .gr-wc.ok { border-left-color:#2f7d43; }
+#v106-gr .gr-wc.ok .v { color:#2f7d43; }
+#v106-gr .gr-wc.nog .v, #v106-gr .gr-wc.open .v { font-size:22px; color:var(--muted,#7a6a55); }
+#v106-gr .gr-allw { overflow:auto; max-height:72vh; }
+#v106-gr table.gr-all { width:auto; font-size:17px; }
+#v106-gr table.gr-all th { vertical-align:bottom; white-space:normal; min-width:58px; max-width:92px; font-size:13px; line-height:1.3; }
+#v106-gr table.gr-all th small { display:block; font-weight:400; }
+#v106-gr table.gr-all td { padding:3px 8px; }
+#v106-gr table.gr-all td.seat { font-weight:700; position:sticky; left:0; background:var(--surface,#fff); }
+#v106-gr table.gr-all td.y { color:#2f7d43; }
+#v106-gr table.gr-all td.x { color:#fff; background:#b03a2e; font-weight:700; }
+#v106-gr table.gr-all td.l { color:#2e5a7a; font-weight:700; }
+#v106-gr table.gr-all td.k { color:#b03a2e; font-weight:700; }
+#v106-gr table.gr-all tr.bad td.seat { color:#b03a2e; }

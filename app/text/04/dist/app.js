@@ -4049,7 +4049,7 @@ try {
    - 一般畫面（#wk-slide-area）與全螢幕（#wkfs-body）各自處理；字級／視窗改變時重新排版。 */
 (function () {
   'use strict';
-  var ENABLED = ['論語選—子路曾皙冉有公西華侍坐', '珍珠奶茶', '臺灣最美麗的火車線', '樂府詩選—長干行', '茫茫人海中的一名女孩', '極短篇小說選'];  /* V128 加〈珍珠奶茶〉；V136 加〈火車線〉；V178 加第一冊 L7、L8、L10 */
+  var ENABLED = ['論語選—子路曾皙冉有公西華侍坐', '珍珠奶茶', '臺灣最美麗的火車線', '樂府詩選—長干行', '茫茫人海中的一名女孩', '極短篇小說選', '桃花源記'];  /* V128 加〈珍珠奶茶〉；V136 加〈火車線〉；V178 加第一冊 L7、L8、L10；V237 加〈桃花源記〉 */
   var B_TYPES = ['頂真', '映襯'];                 /* 跨句單詞型 */
   var C_TYPES = ['轉品', '借代'];                 /* 單字單詞型 */
   var GENERIC = ['回文', '頂真'];                 /* 說明只是基本概念 → 只顯示名稱 */
@@ -4154,7 +4154,7 @@ try {
     mn.forEach(function (it) {
       var m = /^m(\d+)_(\d+)$/.exec(it.id || ''); if (!m) return;
       var L = (pg.lines || [])[+m[1]]; if (!L) return;
-      var v = m[2] === '0' ? L.meanShort : L.mean2Short; if (v) it.short = v;
+      var v = m[2] === '0' ? L.meanShort : (m[2] === '1' ? L.mean2Short : L.mean3Short); if (v) it.short = v;
     });
   }
 
@@ -4367,7 +4367,7 @@ try {
       bx.style.top = rc.t + 'px'; placed.push(rc);
     }
     function body(it, rhet) {
-      var full = rhet ? isOpen(it.id + '#full') : !isOpen(it.id + '#full'), txt   /* 學霸網：句意預設詳細版（老師 11/16），點「短」才收成短版 */ = (it.short && !full) ? it.short : it.exp;
+      var full = isOpen(it.id + '#full'), txt = (it.short && !full) ? it.short : it.exp;
       var h = rhet ? '<b>' + it.name + '</b>' + (txt && (GENERIC.indexOf(it.name) < 0 || full) ? '（' + String(txt).replace(/[。]$/, '') + '）' : '') : txt;
       if (it.short && it.exp) h += '<span class="tm-more" data-full="' + it.id + '">' + (full ? '短' : '詳') + '</span>';
       return h;
@@ -6833,12 +6833,819 @@ try {
   };
 })();
 } catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/188_v240-l7-tabs-js.js ════ */
+try {
+(function () {
+  /* V240：〈長干行〉（L7）題解區（老師 11/12）
+     - 小標題：封面／作者／題解／詩的流變／樂府詩／樂府代表作／◉第一段…（原本題解區的頁都歸「題解·課本／題解·補充」交錯出現）
+     - 題解頁＝課本「樂府詩簡介＋題解」，按鈕跳到樂府詩、詩的流變；各頁有「目錄／回題解」，照 RAY PPT「切過去講完再切回來」
+     - 內容一項一項收合（details.l7d），小封面的目錄點了直接跳到那一項並展開
+     - 代表作頁「翻譯」按鈕：顯示／收起每段原文下的翻譯（教師版）
+     - 課文頁加 body.l7-wide：詩句行與行之間加寬，方便手寫（CSS 在 182_v240-l7-wide-css）
+     只動這一課；其他課的小標題不變。 */
+  var KEY = '樂府詩選—長干行';
+  function tabOf(s) {
+    if (s.type === 'info' && s.kind === 'author') return '作者';
+    if (s.type === 'info' && s.kind === 'intro') {
+      var p = String(s.label || '').split('·')[0];
+      return p === '詩的流變' ? '詩的流變' : p === '樂府詩' ? '樂府詩' : p === '代表作' ? '樂府代表作' : '題解';
+    }
+    return null;
+  }
+  var _build = wkBuildSections;
+  wkBuildSections = function (slides) {
+    var map = _build.apply(this, arguments);
+    if (!slides || !slides.some(function (s) { return s.bookKey === KEY; })) return map;
+    /* 題解區（作者～課文前）整段依頁名重新分籤，其餘照原本 */
+    var out = [], first = -1, last = -1;
+    slides.forEach(function (s, i) { if (tabOf(s)) { if (first < 0) first = i; last = i; } });
+    map.forEach(function (m) { if (m.idx < first || m.idx > last) out.push(m); });
+    var prev = null;
+    for (var i = first; i >= 0 && i <= last; i++) {
+      var lb = tabOf(slides[i]);
+      if (lb && lb !== prev) out.push({ label: lb, idx: i });
+      prev = lb;
+    }
+    out.sort(function (a, b) { return a.idx - b.idx; });
+    return out;
+  };
+
+  function curBox() {
+    var fs = document.getElementById('wkfs-body');
+    return (wkProjMode && fs) ? fs : document.getElementById('wk-slide-area');
+  }
+  window.l7Go = function (label, k) {
+    var i = wkSlides.findIndex(function (s) { return s.label === label; });
+    if (i < 0) return;
+    wkGoto(i);
+    setTimeout(function () {
+      var box = curBox(); if (!box) return;
+      var el = k ? box.querySelector('details.l7d[data-k="' + String(k).replace(/"/g, '') + '"]') : null;
+      if (el) { el.open = true; el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+      else { var t = box.querySelector('.wk-slide'); if (t) t.scrollIntoView({ block: 'start' }); }
+    }, 60);
+  };
+  window.l7All = function (btn) {
+    var slide = btn.closest('.wk-slide') || document;
+    var ds = slide.querySelectorAll('details.l7d'), allOpen = true;
+    ds.forEach(function (d) { if (!d.open) allOpen = false; });
+    ds.forEach(function (d) { d.open = !allOpen; });
+    btn.textContent = allOpen ? '全部展開' : '全部收起';
+  };
+  /* V241（11/13）：代表作頁底「回最上方」 */
+  window.l7Top = function (btn) {
+    var t = btn.closest('.wk-slide') || curBox(); if (!t) return;
+    /* 投影模式：頁面本身在捲（.wk-slide overflow:auto）；一般畫面：整個視窗在捲 */
+    if (t.scrollTop > 0) t.scrollTo({ top: 0, behavior: 'smooth' });
+    else t.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  };
+  window.l7Tr = function (btn) {
+    var slide = btn.closest('.wk-slide') || document;
+    var on = !btn.classList.contains('on');
+    btn.classList.toggle('on', on);
+    slide.querySelectorAll('.l7-y').forEach(function (y) { y.classList.toggle('show', on); });
+  };
+
+  /* 〈詩的變形記〉流變動畫（lb/index.html）：蓋在畫面最上層開，頁內「✕ 回課文」或 Esc 關掉，回到原本那一頁 */
+  window.l7Anim = function () {
+    if (document.getElementById('l7-anim')) return;
+    var box = document.createElement('div');
+    box.id = 'l7-anim';
+    box.innerHTML = '<iframe src="lb/index.html" title="詩的變形記" allow="fullscreen; autoplay"></iframe>';
+    document.body.appendChild(box);
+    setTimeout(function () { var f = box.querySelector('iframe'); if (f) f.focus(); }, 300);
+  };
+  function closeAnim() { var b = document.getElementById('l7-anim'); if (b) b.remove(); }
+  window.addEventListener('message', function (e) { if (e.data && e.data.lbClose) closeAnim(); });
+
+  var _render = wkRenderCurrent;
+  wkRenderCurrent = function () {
+    document.body.classList.toggle('l7-wide', wkKey === KEY);
+    return _render.apply(this, arguments);
+  };
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/189_v243-wk-split-js.js ════ */
+try {
+(function () {
+  'use strict';
+  /* ── V243（老師 11/13「習作跟課後習題能不能拆成跟A卷一樣一頁一題，不然手機稿不好追」）──
+     習作的選擇題區（綜合理解練習 quiz、閱讀測驗 read）原本一區一頁（8 題擠一頁），平板換題手機分不出在哪一題。
+     → 執行期把這兩種區拆成「一題一頁」，跟 A卷一樣；閱讀測驗每頁左邊都留題幹文章，賞析放在該區最後一題。
+     ・資料不動（TEXTBOOK 原樣），只改投影片清單 wkParseSlides 與該頁的渲染。
+     ・表格區（字音、字形、字詞義、國學常識、趣味文學、挑戰加分站）照舊一區一頁。
+     ・課後習題的基礎練習本來就一題一頁；進階練習只有一張答案表，不拆。
+     ・手機講稿代號：work:<區標題>|<題號>（186 sid）。
+     ・習作答案總覽點題號：跳到那一題的頁。
+     ・螢光筆（164，記頁碼）：這課第一次拆頁時，把習作之後各頁的舊頁碼往後移，畫過的 A卷等不會跑到別題。 */
+  function splittable(s) {
+    return s && s.type === 'work' && !s.item && s.sec && (s.sec.kind === 'quiz' || s.sec.kind === 'read') && (s.sec.items || []).length > 1;
+  }
+
+  var _parse = wkParseSlides;
+  wkParseSlides = function (key) {
+    var old = _parse.apply(this, arguments);
+    if (!old || !old.some(splittable)) return old;
+    var out = [], map = [];   /* map[舊頁碼] = 新頁碼（拆開的區對到它的第 1 題） */
+    old.forEach(function (s, i) {
+      map[i] = out.length;
+      if (!splittable(s)) { out.push(s); return; }
+      var items = s.sec.items, N = items.length;
+      items.forEach(function (it, ii) {
+        out.push({ type: 'work', sec: s.sec, item: it, ii: ii, itot: N, first: s.first && ii === 0, title: s.title });
+      });
+    });
+    /* 習作答案總覽的跳題目標：改指向那一題的頁 */
+    out.forEach(function (s) {
+      if (s.type !== 'work_answers') return;
+      (s.targets || []).forEach(function (t) {
+        var os = old[t.slideIdx]; if (!os) return;
+        var ni = map[t.slideIdx];
+        for (var j = ni; j < out.length && out[j].sec === os.sec; j++) {
+          if (out[j].item && String(out[j].item.n) === String(t.qn)) { ni = j; break; }
+        }
+        t.slideIdx = ni;
+      });
+    });
+    migrateMarks(key, map);
+    return out;
+  };
+
+  /* 螢光筆舊頁碼 → 新頁碼（每課只做一次） */
+  function migrateMarks(key, map) {
+    try {
+      var DONE = 'v243_wksplit_mig', done = JSON.parse(localStorage.getItem(DONE) || '{}') || {};
+      if (done[key]) return;
+      var raw = localStorage.getItem('hlmark_trial_v1');
+      if (raw) {
+        var a = JSON.parse(raw) || [], ch = false;
+        a.forEach(function (m) {
+          if (m && m.lesson === String(key) && typeof m.idx === 'number' && map[m.idx] != null && map[m.idx] !== m.idx) { m.idx = map[m.idx]; ch = true; }
+        });
+        if (ch) localStorage.setItem('hlmark_trial_v1', JSON.stringify(a));
+      }
+      done[key] = 1; localStorage.setItem(DONE, JSON.stringify(done));
+    } catch (e) {}
+  }
+
+  var _render = wkRenderSlideHTML;
+  wkRenderSlideHTML = function (slide) {
+    /* 答案總覽：原程式依題號找目標，閱讀測驗 1～3 題會跳到綜合理解的 1～3 題（題號重複）。
+       按鈕與 targets 都是照區、照題的順序 → 數量相同時，第 k 顆按鈕改用第 k 個目標。 */
+    if (slide && slide.type === 'work_answers' && slide.targets && slide.targets.length) {
+      var ho = _render.apply(this, arguments), T = slide.targets, re = /wkWorkAnswerGo\(\d+,'((?:[^'\\]|\\.)*)'\)/g;
+      var cnt = (ho.match(re) || []).length;
+      if (cnt !== T.length) return ho;
+      var k = 0;
+      return ho.replace(re, function (m, qn) { var t = T[k++]; return String(t.qn).replace(/'/g, "\\'") === qn ? "wkWorkAnswerGo(" + t.slideIdx + ",'" + qn + "')" : m; });
+    }
+    if (!(slide && slide.type === 'work' && slide.item)) return _render.apply(this, arguments);
+    var S = slide.sec, last = slide.ii === slide.itot - 1;
+    var one = Object.assign({}, S, { items: [slide.item], appraise: last ? S.appraise : '' });
+    var h = _render.call(this, Object.assign({}, slide, { sec: one }));
+    var tag = '<span class="wk-qpos">第 ' + slide.item.n + ' 題　' + (slide.ii + 1) + '/' + slide.itot + '</span>';
+    return h.replace('wk-slide wks-work', 'wk-slide wks-work wks-wq1').replace(/(<span class="wk-head">[\s\S]*?<\/span>)/, '$1' + tag);
+  };
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/190_v245-jiayi-js.js ════ */
+try {
+(function () {
+  'use strict';
+  /* ── V245 甲乙丙丁題（老師 11/13：L6 習作第 2 題甲乙丙丁擠在一起、詳解全塞在 D 選項）──
+     題幹裡 (甲)(乙)(丙)… 一項一行；詳解裡「(甲)…(乙)…」拆到各項底下，點那一項才打開；選項裡只留沒拆到的部分。
+     資料不動，只在畫面上重排。平板（src/js/190）與手機（tn/index.html）各放一份同樣的程式。 */
+  var JY_LET = '甲乙丙丁戊己庚辛', JY_CIR = '①②③④⑤⑥⑦⑧';   /* V246：①②判斷題也算（老師 11/13「一起改」） */
+  /* 標記：(甲)／（甲）；資料裡少數寫成「( ) 戊」也算。前面要是開頭、空白、標點或另一個標記（避免抓到詳解句中「應接<b>(乙)</b>」） */
+  var JY_RE = /[（(][\s　]*([甲乙丙丁戊己庚辛])[\s　]*[）)]|[（(][\s　]*[）)][\s　]*([甲乙丙丁戊己庚辛])(?=[\s　])|([①②③④⑤⑥⑦⑧])/g;
+  function jyMarks(s, strict) {
+    var o = [], m; JY_RE.lastIndex = 0;
+    while ((m = JY_RE.exec(s))) {
+      var pv = s.slice(0, m.index).replace(/<br\s*\/?>\s*$/i, '\n');
+      var c = pv.slice(-1), L = m[1] || m[2] || m[3];
+      if ((strict || m[3]) && pv && !/[\s　。；;，,：:？?！!）)\n]/.test(c)) continue;
+      o.push({ L: L, at: m.index, end: m.index + m[0].length, lab: m[3] ? L : '(' + L + ')' });
+    }
+    return o;
+  }
+  function jyEmpty(t) { return !String(t).replace(/<[^>]+>/g, '').replace(/[\s　、，,；;：:]/g, ''); }
+  function jyTrim(t) { return String(t).replace(/^(?:[\s　、，：:]|<br\s*\/?>)+|(?:[\s　，、；;]|<br\s*\/?>)+$/gi, ''); }
+  var JY_ASK = /(以上|上述|上列|前述|這些|請問|依此|依據|根據|由此|關於|下列|何者|哪|選項)/;
+  function jyList(stem) {
+    stem = String(stem || '');
+    var cm = /<(div|img|table|figure)\b/i.exec(stem), cut = cm ? cm.index : stem.length;
+    var head = stem.slice(0, cut), after = stem.slice(cut);
+    var ms = jyMarks(head); if (ms.length < 2) return null;
+    var fam = JY_CIR.indexOf(ms[0].L) >= 0 ? JY_CIR : JY_LET;
+    ms = ms.filter(function (m) { return fam.indexOf(m.L) >= 0; }); if (ms.length < 2) return null;
+    for (var i = 0; i < ms.length; i++) if (ms[i].L !== fam[i]) return null;
+    var items = ms.map(function (m, i) { return { L: m.L, lab: m.lab, t: head.slice(m.end, i + 1 < ms.length ? ms[i + 1].at : head.length) }; });
+    if (items.some(function (it) { return jyEmpty(it.t); })) return null;
+    /* 最後一項後面接的問句（「以上各組…」「依此規劃…應是：」）拆出來另起一行 */
+    var last = items[items.length - 1], tail = '', re = /[。？！?!]/g, mm, at = -1;
+    while ((mm = re.exec(last.t))) {
+      var rest = jyTrim(last.t.slice(mm.index + 1)).replace(/<[^>]+>/g, '');
+      if (!rest) break;
+      if (JY_ASK.test(rest.slice(0, 4)) && rest.search(JY_ASK) === 0 && /[？?：:]\s*$/.test(rest)) { at = mm.index + 1; break; }
+    }
+    if (at > 0) { tail = last.t.slice(at); last.t = last.t.slice(0, at); }
+    items.forEach(function (it) { it.t = jyTrim(it.t); });
+    return { pre: jyTrim(head.slice(0, ms[0].at)), items: items, tail: jyTrim(tail) + after };
+  }
+  /* 詳解「(甲)…(乙)(丙)…」→ 各項；連在一起的空標記（(乙)(丙)由…）共用後面那段。沒拆到回傳 null */
+  function jySplit(text, letters) {
+    if (!text) return null;
+    var blocks = String(text).split(/<br\s*\/?>/i), rest = [], per = {}, hit = false;
+    blocks.forEach(function (b) {
+      var ms = jyMarks(b, true).filter(function (m) { return letters.indexOf(m.L) >= 0; });
+      if (!ms.length || (ms.length < 2 && letters.length > 1 && !jyEmpty(b.slice(0, ms[0].at)))) { rest.push(b); return; }
+      var pieces = [], grp = [];
+      for (var i = 0; i < ms.length; i++) {
+        var t = b.slice(ms[i].end, i + 1 < ms.length ? ms[i + 1].at : b.length);
+        grp.push(ms[i].L);
+        if (jyEmpty(t) && i + 1 < ms.length) continue;
+        if (jyEmpty(t)) { pieces = null; break; }
+        pieces.push({ Ls: grp, t: jyTrim(t).replace(/^[：:]\s*/, '') }); grp = [];
+      }
+      if (!pieces || !pieces.length) { rest.push(b); return; }
+      var pre = jyTrim(b.slice(0, ms[0].at)), lab = '';
+      if (/^(語譯|翻譯|解析|說明|釋義|字義|注釋)[：:]?$/.test(pre)) lab = pre.replace(/[：:]$/, '');
+      else if (pre && !/^[（(]?[A-E][）)]?$/.test(pre)) rest.push(pre);
+      pieces.forEach(function (p) { p.Ls.forEach(function (L) { (per[L] = per[L] || []).push((lab ? '<span class="jy4-lab">' + lab + '</span>' : '') + p.t); }); });
+      hit = true;
+    });
+    if (!hit) return null;
+    return { rest: rest.join('<br>').replace(/^(\s*<br>)+|(<br>\s*)+$/g, '').trim(), per: per };
+  }
+  /* V246：甲乙丙標在文章裡（不是一項一行的題目），詳解「(甲)…(乙)…(丙)…」整段塞在一個選項 → 在選項裡拆成一項一行 */
+  function jyExpLines(q, stemKey, fmt) {
+    fmt = fmt || function (x) { return x; };
+    var st = String(q[stemKey] || ''), letters = '', m; JY_RE.lastIndex = 0;
+    while ((m = JY_RE.exec(st))) { var L = m[1] || m[2]; if (L && letters.indexOf(L) < 0) letters += L; }
+    if (letters.length < 2) return null;
+    var hit = false;
+    function lines(t) {
+      var r = jySplit(t, letters); if (!r) return t;
+      var Ls = Object.keys(r.per); if (Ls.length < 2) return t;
+      Ls.sort(function (a, b) { return JY_LET.indexOf(a) - JY_LET.indexOf(b); });
+      hit = true;
+      return Ls.map(function (L) { return '<div class="jy4-xl"><span class="jy4-m">(' + L + ')</span>' + fmt(r.per[L].join('<br>')) + '</div>'; }).join('') +
+        (r.rest ? '<div class="jy4-xr">' + fmt(r.rest) + '</div>' : '');
+    }
+    var q2 = {}; for (var kk in q) q2[kk] = q[kk];
+    q2.opts = (q.opts || []).map(function (o) { var o2 = o.slice(); if (o2[2]) o2[2] = lines(o2[2]); return o2; });
+    if (q.per) { q2.per = {}; for (var k in q.per) q2.per[k] = lines(q.per[k]); }
+    if (q.exp) q2.exp = lines(q.exp);
+    if (!hit) return null;
+    q2._jy = 2;
+    return q2;
+  }
+  /* 題目 → 複本（題幹換成逐項 HTML、詳解拆走）；不是甲乙丙丁列項題回傳 null。fmt＝各片段輸出前的處理（手機用 clean） */
+  function jyTransform(q, stemKey, fmt) {
+    fmt = fmt || function (x) { return x; };
+    var J = jyList(q[stemKey]); if (!J) return null;
+    var letters = J.items.map(function (it) { return it.L; }), X = {}, seen = {};
+    function eat(t) {
+      var r = jySplit(t, letters); if (!r) return t;
+      for (var L in r.per) r.per[L].forEach(function (p) { var k = L + '|' + p.replace(/<[^>]+>/g, '').replace(/\s/g, ''); if (!seen[k]) { seen[k] = 1; (X[L] = X[L] || []).push(p); } });
+      return r.rest;
+    }
+    var q2 = {}; for (var kk in q) q2[kk] = q[kk];
+    q2.opts = (q.opts || []).map(function (o) { var o2 = o.slice(); if (o2[2]) o2[2] = eat(o2[2]); return o2; });
+    if (q.per) { q2.per = {}; for (var k in q.per) q2.per[k] = eat(q.per[k]); }
+    if (q.exp) q2.exp = eat(q.exp);
+    var any = letters.some(function (L) { return X[L]; });
+    q2[stemKey] = '<div class="jy4' + (any ? ' jy4-has' : '') + '">' + (J.pre ? '<div class="jy4-pre">' + fmt(J.pre) + '</div>' : '') +
+      J.items.map(function (it) {
+        var x = X[it.L];
+        return '<div class="jy4-l' + (x ? ' has' : '') + '"' + (x ? ' onclick="this.classList.toggle(\'jy4-on\');event.stopPropagation()"' : '') + '>' +
+          '<span class="jy4-m">' + it.lab + '</span><span class="jy4-t">' + fmt(it.t) + '</span>' +
+          (x ? '<div class="jy4-x">' + fmt(x.join('<br>')) + '</div>' : '') + '</div>';
+      }).join('') + (J.tail ? '<div class="jy4-tail">' + fmt(J.tail) + '</div>' : '') + '</div>';
+    q2._jy = 1;
+    return q2;
+  }
+
+  /* V262（老師 11/18：珍奶基礎練習第 7 題「甲乙丙的詳解應拆到上面題幹，下面只放成語意思」）
+     題幹是「問句＋一個 aq-sub 區塊，區塊裡 (甲)(乙)(丙) 各一段」，詳解「(甲)…(乙)…」→ 掛到區塊裡對應那一段（點開），選項只留沒拆到的（成語解釋等）。 */
+  function jyBlock(q, stemKey, fmt) {
+    fmt = fmt || function (x) { return x; };
+    var st = String(q[stemKey] || ''), m = /<div class=['"]aq-sub['"]>/i.exec(st); if (!m) return null;
+    var head = st.slice(0, m.index), body = st.slice(m.index + m[0].length), src = '';
+    var sm = /<div class=['"]aq-src['"]>[\s\S]*?<\/div>/i.exec(body); if (sm) { src = sm[0]; body = body.replace(sm[0], ''); }
+    body = body.replace(/<\/div>\s*$/i, '');
+    if (/<(div|img|table)\b/i.test(body)) return null;
+    var lines = body.split(/<br\s*\/?>/i), items = [];
+    lines.forEach(function (ln) {
+      var mm = /^[\s　]*[（(][\s　]*([甲乙丙丁戊己庚辛])[\s　]*[）)][\s　]*/.exec(ln);
+      if (mm) items.push({ L: mm[1], lab: '(' + mm[1] + ')', t: ln.slice(mm[0].length) });
+      else if (items.length) items[items.length - 1].t += '<br>' + ln;
+      else return;
+    });
+    if (items.length < 2) return null;
+    for (var i = 0; i < items.length; i++) if (items[i].L !== JY_LET[i]) return null;
+    if (items.some(function (it) { return jyEmpty(it.t); })) return null;
+    var letters = items.map(function (it) { return it.L; }), X = {}, seen = {};
+    function eat(t) {
+      var r = jySplit(t, letters); if (!r) return t;
+      for (var L in r.per) r.per[L].forEach(function (p) { var k = L + '|' + p.replace(/<[^>]+>/g, '').replace(/\s/g, ''); if (!seen[k]) { seen[k] = 1; (X[L] = X[L] || []).push(p); } });
+      return r.rest;
+    }
+    var q2 = {}; for (var kk in q) q2[kk] = q[kk];
+    q2.opts = (q.opts || []).map(function (o) { var o2 = o.slice(); if (o2[2]) o2[2] = eat(o2[2]); return o2; });
+    if (q.per) { q2.per = {}; for (var k in q.per) q2.per[k] = eat(q.per[k]); }
+    if (q.exp) q2.exp = eat(q.exp);
+    if (!letters.some(function (L) { return X[L]; })) return null;
+    q2[stemKey] = (head ? fmt(head) : '') + '<div class="jy4 jy4-has">' +
+      items.map(function (it) {
+        var x = X[it.L];
+        return '<div class="jy4-l' + (x ? ' has' : '') + '"' + (x ? ' onclick="this.classList.toggle(\'jy4-on\');event.stopPropagation()"' : '') + '>' +
+          '<span class="jy4-m">' + it.lab + '</span><span class="jy4-t">' + fmt(it.t) + '</span>' +
+          (x ? '<div class="jy4-x">' + fmt(x.join('<br>')) + '</div>' : '') + '</div>';
+      }).join('') + '</div>' + (src ? fmt(src) : '');
+    q2._jy = 1;
+    return q2;
+  }
+
+  /* 平板：基礎練習（iquiz，題幹 q）、A卷（aq，題幹 stem）、習作（work，題幹 q；含 189 一題一頁）渲染前換成重排後的複本 */
+  function tx(q, key) { return (q && !q._jy && (jyTransform(q, key) || jyBlock(q, key) || jyExpLines(q, key))) || q; }
+  var _render = wkRenderSlideHTML;
+  wkRenderSlideHTML = function (slide) {
+    if (slide && (slide.type === 'iquiz' || slide.type === 'aq') && slide.q) {
+      var s2 = Object.assign({}, slide, { q: tx(slide.q, slide.type === 'aq' ? 'stem' : 'q') });
+      return _render.call(this, s2);
+    }
+    if (slide && slide.type === 'work' && slide.sec && (slide.sec.items || []).length) {
+      var map = new Map();
+      var items = slide.sec.items.map(function (it) { var t = tx(it, 'q'); map.set(it, t); return t; });
+      var s3 = Object.assign({}, slide, { sec: Object.assign({}, slide.sec, { items: items }) });
+      if (slide.item) s3.item = map.get(slide.item) || slide.item;
+      return _render.call(this, s3);
+    }
+    return _render.apply(this, arguments);
+  };
+  /* 「全部顯示」「直接顯示答案」也一起打開各項詳解 */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.iq-all,.as-all,.wq-reveal-btn'); if (!b) return;
+    var root = b.classList.contains('wq-reveal-btn') ? b.closest('.wq-item') : b.closest('.wk-slide');
+    if (root) root.querySelectorAll('.jy4-l.has').forEach(function (x) { x.classList.add('jy4-on'); });
+  }, true);
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/191_v250-l7-flat-js.js ════ */
+try {
+(function () {
+  /* V250（老師 11/13 晚）：樂府詩各頁改成全部展開（div.l7b，不再是 details）。
+     重新定義 window.l7Go（188_v240-l7-tabs-js 的舊版會被這個蓋掉，實際生效＝本檔）：
+     跳到某頁某一項時，details 或 div.l7b 都找得到；details 才需要打開。 */
+  function curBox() {
+    var fs = document.getElementById('wkfs-body');
+    return (wkProjMode && fs) ? fs : document.getElementById('wk-slide-area');
+  }
+  window.l7Go = function (label, k) {
+    var i = wkSlides.findIndex(function (s) { return s.label === label; });
+    if (i < 0) return;
+    wkGoto(i);
+    setTimeout(function () {
+      var box = curBox(); if (!box) return;
+      var el = k ? box.querySelector('[data-k="' + String(k).replace(/"/g, '') + '"]') : null;
+      if (el) { if (el.tagName === 'DETAILS') el.open = true; el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+      else { var t = box.querySelector('.wk-slide'); if (t) t.scrollIntoView({ block: 'start' }); }
+    }, 60);
+  };
+  /* 11/13 晚 老師：發展頁點代表作 → 統一大小的浮框顯示原文（不跳頁）；有「翻譯」；✕／Esc／點外面關閉。
+     內容取自 wkSlides 的「代表作·○○」頁（拿掉頁頂／頁底導覽）。投影模式也蓋得到（z-index 高於 #wk-fullscreen）。 */
+  function closePop() { var p = document.getElementById('l7-pop'); if (p) p.remove(); document.removeEventListener('keydown', onKey, true); }
+  function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); closePop(); } }
+  window.l7Pop = function (k) {
+    closePop();
+    var s = (typeof wkSlides !== 'undefined' ? wkSlides : []).find(function (x) { return x.label === '代表作·' + k; });
+    if (!s) return;
+    var box = document.createElement('div');
+    box.id = 'l7-pop';
+    box.innerHTML = '<div class="l7p-box" role="dialog" aria-label="〈' + k + '〉"><div class="l7p-top"><b class="l7p-title">' + s.head + '</b><span class="l7p-sp"></span>' +
+      '<button type="button" class="l7p-tr">翻譯</button><button type="button" class="l7p-x" aria-label="關閉">✕</button></div><div class="l7p-body"></div></div>';
+    var body = box.querySelector('.l7p-body');
+    body.innerHTML = s.body;
+    body.querySelectorAll('.l7-nav').forEach(function (n) { n.remove(); });
+    box.addEventListener('click', function (e) { if (e.target === box) closePop(); });
+    box.querySelector('.l7p-x').onclick = closePop;
+    var tr = box.querySelector('.l7p-tr');
+    tr.onclick = function () { var on = !tr.classList.contains('on'); tr.classList.toggle('on', on); body.querySelectorAll('.l7-y').forEach(function (y) { y.classList.toggle('show', on); }); };
+    (document.fullscreenElement || document.body).appendChild(box);
+    document.addEventListener('keydown', onKey, true);
+  };
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/193_v251-l7-guofeng-js.js ════ */
+try {
+(function () {
+  /* V251（老師 11/13：不要只是加點圖，要大破大立，做成更優秀的互動網頁）
+     〈樂府長卷〉互動版（yf/index.html）：一個時代一幅畫、重點字按了才揭曉、讀詩模式、樂府／古詩分類挑戰。
+     內容由 yf 頁自己讀 data/lessons/30.js，這裡只負責把它蓋在畫面最上層開起來：
+     - window.l7Scroll(k)：開長卷；有 k（作品名）就直接進那首的讀詩模式
+     - 重新定義 window.l7Pop（191_v250-l7-flat-js 的浮框會被這個蓋掉，實際生效＝本檔）：發展頁點代表作 → 讀詩模式，關掉就回原本那一頁
+     - 樂府詩封面頁插入「樂府長卷　互動版」按鈕（不改課檔）
+     蓋版用 188_v240-l7-tabs-js 的 #l7-anim（樣式在 182），頁內「✕ 回課文」送出 lbClose 訊息由 188 關掉。 */
+  var KEY = '樂府詩選—長干行';
+  window.l7Scroll = function (k) {
+    if (document.getElementById('l7-anim')) return;
+    var box = document.createElement('div');
+    box.id = 'l7-anim';
+    box.innerHTML = '<iframe src="yf/index.html' + (k ? '#' + encodeURIComponent(k) : '') + '" title="樂府長卷" allow="fullscreen; autoplay"></iframe>';
+    (document.fullscreenElement || document.body).appendChild(box);
+    setTimeout(function () { var f = box.querySelector('iframe'); if (f) f.focus(); }, 300);
+  };
+  window.l7Pop = function (k) { window.l7Scroll(k); };
+
+  var _render = wkRenderCurrent;
+  wkRenderCurrent = function () {
+    var r = _render.apply(this, arguments);
+    try {
+      /* V253：長卷已整合作者、題解、詩的流變、樂府詩、代表作、考點，所以「詩的流變」封面也放入口 */
+      if (wkKey === KEY && wkSlides[wkIdx] && (wkSlides[wkIdx].label === '樂府詩·封面' || wkSlides[wkIdx].label === '詩的流變·封面')) {
+        document.querySelectorAll('#wkfs-body .l7-cover, #wk-slide-area .l7-cover').forEach(function (cv) {
+          if (cv.querySelector('.l7-yf-row')) return;
+          var row = document.createElement('div');
+          row.className = 'l7-yf-row';
+          row.innerHTML = '<a onclick="l7Scroll()">樂府長卷　互動版 ▸</a>';
+          var sub = cv.querySelector('.l7-cv-s');
+          if (sub) sub.insertAdjacentElement('afterend', row); else cv.insertBefore(row, cv.firstChild);
+        });
+      }
+    } catch (e) { setTimeout(function () { throw e; }); }
+    return r;
+  };
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/194_v254-yf-inline-js.js ════ */
+try {
+(function () {
+  /* V254（老師 11/16：「把樂府長卷抽出來外面這一層，對應頁面套上籤頁，把筆、聚光燈等都套上去」）
+     〈長干行〉題解區改成直接放樂府長卷（yf/index.html?embed=1），不再蓋版開：
+     - 籤頁：作者／題解／詩的流變／樂府詩／樂府代表作（考點、挑戰併在樂府代表作），點了跳到長卷那一段；
+       長卷自己換頁時，籤頁、頁碼跟著亮到對應那一籤。
+     - 原本的作者～代表作分頁（課檔 info 頁）沒有刪，整段搬到最後，收在「舊版」籤（老師選「長卷取代、舊頁收起來」）。
+     - 網站的 ◀ ▶、鍵盤 ←／→ 在長卷裡＝長卷的「下一步／上一頁」（重點字照樣一個一個揭曉）；
+       長卷最後一頁再按下一步 → 網站下一頁（課文）；第一頁再按上一頁 → 網站封面。
+     - 畫筆：投影全螢幕時長卷在畫記層下面，畫筆、螢光筆、觸控筆都能用；筆跡依「長卷第幾頁」分開存
+       （重新指定 015 的 wkInkKey，實際生效＝本檔）。
+     - 聚光燈：網站的聚光燈蓋在最上層，長卷裡按 L 也會開關網站的聚光燈。
+     做法：長卷 iframe 不放在 #wk-slide-area／#wkfs-body 裡（那兩個每次換頁都被 innerHTML 重寫，iframe 會重載），
+     而是一般畫面掛在 body、投影掛在 #wk-fullscreen，位置對齊頁面上的空位（.wk-yf-slot）；不在長卷頁時藏起來但不關，
+     回來時停在原本那一頁。網站的 wkRenderCurrent 每次照常整套跑（上課紀錄等外掛不受影響）。
+     包 wkParseSlides／wkBuildSections／wkRenderSlideHTML／wkRenderCurrent／wkGoto／wkNext／wkPrev（都在最外層）。 */
+  var KEY = '樂府詩選—長干行';
+  /* 長卷章節（yf 的 CH）→ 網站籤頁；每籤點了跳到的章節 */
+  var TAB_OF = { 封面: '作者', 作者: '作者', 題解: '題解', 流變: '詩的流變', 名稱: '樂府詩', 特色: '樂府詩', 發展: '樂府詩', 新樂府: '樂府詩', 影響: '樂府詩', 比較: '樂府詩', 代表作: '樂府代表作', 考點: '樂府代表作', 挑戰: '樂府代表作' };
+  var TABS = [['作者', '作者'], ['題解', '題解'], ['詩的流變', '流變'], ['樂府詩', '名稱'], ['樂府代表作', '代表作']];
+  function isOld(s) { return s && s.type === 'info' && (s.kind === 'author' || s.kind === 'intro'); }
+  function isYf(s) { return !!s && s.type === 'yf'; }
+
+  var _parse = wkParseSlides;
+  wkParseSlides = function (key) {
+    var a = _parse.apply(this, arguments);
+    if (key !== KEY || !a) return a;
+    var first = -1, last = -1;
+    a.forEach(function (s, i) { if (isOld(s)) { if (first < 0) first = i; last = i; } });
+    if (first < 0) return a;
+    var old = a.slice(first, last + 1);
+    old.forEach(function (s) { s.yfOld = true; });
+    var v = TABS.map(function (t) { return { type: 'yf', bookKey: KEY, key: KEY, label: '樂府長卷·' + t[0], yfTab: t[0], yfCh: t[1] }; });
+    return a.slice(0, first).concat(v, a.slice(last + 1), old);
+  };
+
+  var _build = wkBuildSections;
+  wkBuildSections = function (slides) {
+    var m = _build.apply(this, arguments);
+    if (!slides || !slides.some(isYf)) return m;
+    var oldStart = slides.findIndex(function (s) { return s.yfOld; });
+    m = m.filter(function (x) { return !(oldStart >= 0 && x.idx >= oldStart) && !isYf(slides[x.idx]); });
+    slides.forEach(function (s, i) { if (isYf(s)) m.push({ label: s.yfTab, idx: i }); });
+    if (oldStart >= 0) m.push({ label: '舊版', idx: oldStart });
+    m.sort(function (a, b) { return a.idx - b.idx; });
+    return m;
+  };
+
+  var _html = wkRenderSlideHTML;
+  wkRenderSlideHTML = function (slide) {
+    if (isYf(slide)) return '<div class="wk-slide wk-yf-slide"><div class="wk-yf-slot"></div></div>';
+    return _html.apply(this, arguments);
+  };
+
+  /* ── 兩個 iframe：一般畫面 n、投影 f；各自建一次，之後只藏不關 ── */
+  var Y = { n: null, f: null, page: 0, count: 0, spec: null, ready: { n: false, f: false } };
+  function mode() { return wkProjMode ? 'f' : 'n'; }
+  function cur() { return wkSlides && wkSlides[wkIdx]; }
+  function block() { var a = -1, b = -1; (wkSlides || []).forEach(function (s, i) { if (isYf(s)) { if (a < 0) a = i; b = i; } }); return [a, b]; }
+  function post(m, msg) { var f = Y[m]; if (f && f.contentWindow) f.contentWindow.postMessage(msg, '*'); }
+  function ensure(m, spec) {
+    if (Y[m]) return false;
+    var f = document.createElement('iframe');
+    f.className = 'wk-yf-frame'; f.title = '樂府長卷'; f.setAttribute('allow', 'fullscreen; autoplay');
+    f.src = 'yf/index.html?embed=1#' + encodeURIComponent(spec);
+    (m === 'f' ? document.getElementById('wk-fullscreen') : document.body).appendChild(f);
+    Y[m] = f; Y.ready[m] = false;
+    f.addEventListener('load', function () { Y.ready[m] = true; });
+    return true;
+  }
+  function place() {
+    var s = cur(), on = isYf(s) && wkKey === KEY, m = mode();
+    ['n', 'f'].forEach(function (k) { if (Y[k] && (k !== m || !on)) Y[k].style.display = 'none'; });
+    if (!on || !Y[m]) return;
+    var f = Y[m];
+    if (m === 'f') {
+      var body = document.getElementById('wkfs-body'), fs = document.getElementById('wk-fullscreen');
+      if (!body || !fs) return;
+      var r = body.getBoundingClientRect(), q = fs.getBoundingClientRect();
+      f.style.left = (r.left - q.left) + 'px'; f.style.top = (r.top - q.top) + 'px';
+      f.style.width = r.width + 'px'; f.style.height = r.height + 'px';
+      f.style.display = r.width > 0 ? 'block' : 'none';
+    } else {
+      var slot = document.querySelector('#wk-slide-area .wk-yf-slot');
+      var rr = slot ? slot.getBoundingClientRect() : null;
+      if (!rr || rr.width < 2) { f.style.display = 'none'; return; }
+      f.style.left = (rr.left + window.scrollX) + 'px'; f.style.top = (rr.top + window.scrollY) + 'px';
+      f.style.width = rr.width + 'px'; f.style.height = rr.height + 'px';
+      f.style.display = 'block';
+    }
+  }
+  setInterval(function () { if (Y.n || Y.f) place(); }, 400);
+  window.addEventListener('resize', place);
+
+  /* 換到長卷某一籤：沒開過就照 spec 開；開過就送指令 */
+  function show() {
+    var s = cur(), m = mode();
+    if (!isYf(s) || wkKey !== KEY) { place(); return; }
+    var spec = Y.spec || 'ch=' + s.yfCh; Y.spec = null;
+    if (!ensure(m, spec)) {
+      if (/^ch=/.test(spec)) post(m, { yfCmd: 'ch', v: spec.slice(3) });
+      else post(m, { yfCmd: 'go', v: spec });
+    }
+    place();
+    setTimeout(place, 60);
+  }
+
+  var _render = wkRenderCurrent;
+  wkRenderCurrent = function () {
+    var r = _render.apply(this, arguments);
+    try {
+      var s = cur();
+      if (isYf(s) && wkKey === KEY) {
+        var t = Y.count ? '長卷 ' + (Y.page + 1) + ' / ' + Y.count : '長卷';
+        var c1 = document.getElementById('wk-counter'); if (c1) c1.textContent = t;
+        var c2 = document.getElementById('wkfs-counter'); if (c2) c2.textContent = t;
+        var c3 = document.getElementById('wkfs-title'); if (c3) c3.textContent = '〈' + wkKey + '〉 ' + t;
+        if (Y.sync) Y.sync = false; else show();
+      } else place();
+    } catch (e) { setTimeout(function () { throw e; }); }
+    return r;
+  };
+
+  var _goto = wkGoto;
+  wkGoto = function (idx) {
+    var s = wkSlides && wkSlides[idx];
+    if (isYf(s)) Y.spec = 'ch=' + s.yfCh;
+    return _goto.apply(this, arguments);
+  };
+  var _next = wkNext, _prev = wkPrev;
+  wkNext = function () {
+    var s = cur(), m = mode();
+    if (isYf(s) && Y[m] && Y.ready[m]) { post(m, { yfCmd: 'next' }); return; }
+    if (isYf(wkSlides[wkIdx + 1]) && !isYf(s)) Y.spec = '0';
+    return _next.apply(this, arguments);
+  };
+  wkPrev = function () {
+    var s = cur(), m = mode();
+    if (isYf(s) && Y[m] && Y.ready[m]) { post(m, { yfCmd: 'prev' }); return; }
+    if (isYf(wkSlides[wkIdx - 1]) && !isYf(s)) Y.spec = 'last';
+    return _prev.apply(this, arguments);
+  };
+
+  /* 投影開／關：換到另一個 iframe，停在同一頁 */
+  var _open = wkOpenProj, _close = wkCloseProj;
+  wkOpenProj = function () { if (isYf(cur())) Y.spec = String(Y.page); return _open.apply(this, arguments); };
+  wkCloseProj = function () {
+    var r = _close.apply(this, arguments);
+    if (isYf(cur()) && wkKey === KEY) { Y.spec = String(Y.page); show(); } else place();
+    return r;
+  };
+
+  /* 畫筆：長卷每一頁各自一份筆跡 */
+  var _inkKey = window.wkInkKey;
+  window.wkInkKey = function () {
+    if (isYf(cur()) && wkKey === KEY) return String(wkKey) + '::yf' + Y.page;
+    return _inkKey.apply(this, arguments);
+  };
+
+  window.addEventListener('message', function (e) {
+    var d = e.data; if (!d || typeof d !== 'object') return;
+    var m = mode();
+    if (!Y[m] || e.source !== Y[m].contentWindow) return;
+    if (d.yfAt) {
+      Y.page = d.yfAt.i; Y.count = d.yfAt.n;
+      var tab = TAB_OF[d.yfAt.ch] || '作者';
+      var i = wkSlides.findIndex(function (s) { return isYf(s) && s.yfTab === tab; });
+      if (i < 0 || !isYf(cur())) return;
+      wkIdx = i; Y.sync = true; wkRenderCurrent();
+      if (wkProjMode && typeof wkInkSync === 'function') wkInkSync();
+    } else if (d.yfEdge) {
+      var b = block(), j = d.yfEdge > 0 ? b[1] + 1 : b[0] - 1;
+      if (j >= 0 && j < wkSlides.length) { wkIdx = j; wkRenderCurrent(); window.focus(); }
+    } else if (d.yfKey === 'L') {
+      if (typeof window.spotToggle === 'function') window.spotToggle();
+    }
+  });
+
+  /* 舊版頁上的「樂府長卷　互動版」入口：沒指定作品就跳到這一層的長卷（193 的 l7Scroll 被包住，有作品名照舊蓋版直接讀詩） */
+  var _scroll = window.l7Scroll;
+  window.l7Scroll = function (k) {
+    if (!k && wkKey === KEY) { var b = block(); if (b[0] >= 0) { Y.spec = '0'; wkIdx = b[0]; wkRenderCurrent(); return; } }
+    return _scroll.apply(this, arguments);
+  };
+
+  /* 換課：另一課不需要長卷 */
+  var _show = showWenxue;
+  showWenxue = function () { var r = _show.apply(this, arguments); place(); return r; };
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/195_v255-yf-tools-js.js ════ */
+try {
+(function () {
+  /* V255（老師 11/16：樂府長卷融合後，無法調字體大小、無法使用標記筆）
+     原因：長卷在 iframe（yf/index.html?embed=1）裡，網站的字級（--base-size）與標記筆（164，只認 #wk-slide-area／#wkfs-body 裡的字）都碰不到 iframe 裡面。
+     做法（只加不刪，不改 194／164）：
+     - 字級：包 setBaseSize，把「目前字級 ÷ 15」當倍率送進長卷（yfZoom），長卷的 --fs 乘上倍率；一般畫面、投影全螢幕的 A−／A＋、顯示設定滑桿都會連動。
+     - 標記筆：網站「🖍 標記筆」開關（body.hm-on）與色盤顏色同步給長卷（yfHm）；長卷自己在字上劃線、存 localStorage「yf_hlmark_v1」（依長卷頁的 key）。
+       長卷頁按「本頁清除」→ 清長卷這一頁的標記；長卷裡按 Esc → 關標記筆。 */
+  var FR = 'iframe.wk-yf-frame';
+  function frames() { return [].slice.call(document.querySelectorAll(FR)); }
+  function send(f, m) { try { if (f.contentWindow) f.contentWindow.postMessage(m, '*'); } catch (e) {} }
+  function base() {
+    return parseFloat(document.documentElement.style.getPropertyValue('--base-size')) ||
+           parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-size')) || 15;
+  }
+  function zoom() { return Math.max(0.6, Math.min(3, base() / 15)); }
+  function pushZoom(f) { var z = zoom(); (f ? [f] : frames()).forEach(function (x) { send(x, { yfZoom: z }); }); }
+  function hmColor() { var b = document.querySelector('#hm-bar .hm-sw.on'); return b ? b.dataset.k : 'y'; }
+  function pushHm(f) { var m = { yfHm: { on: document.body.classList.contains('hm-on'), c: hmColor() } }; (f ? [f] : frames()).forEach(function (x) { send(x, m); }); }
+
+  var _sbs = window.setBaseSize;
+  if (typeof _sbs === 'function') {
+    window.setBaseSize = setBaseSize = function () { var r = _sbs.apply(this, arguments); try { pushZoom(); } catch (e) {} return r; };
+  }
+
+  new MutationObserver(function () { pushHm(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#hm-bar .hm-sw'); if (b) setTimeout(pushHm, 0);
+  }, true);
+  /* 「本頁清除」：長卷這一頁由長卷自己清（網站 164 只看得到網站上的標記） */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#hm-bar [data-a="clear"]'); if (!b) return;
+    var s = window.wkSlides && wkSlides[wkIdx];
+    if (!s || s.type !== 'yf') return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    if (!confirm('清除長卷這一頁的標記？（清掉就沒有了）')) return;
+    frames().filter(function (f) { return f.style.display !== 'none'; }).forEach(function (f) { send(f, { yfHmClear: 1 }); });
+  }, true);
+
+  window.addEventListener('message', function (e) {
+    var d = e.data; if (!d || typeof d !== 'object') return;
+    var f = frames().filter(function (x) { return x.contentWindow === e.source; })[0]; if (!f) return;
+    if (d.yfReady) { pushZoom(f); pushHm(f); }
+    else if (d.yfKey === 'HMOFF' && typeof window.hmToggle === 'function') window.hmToggle(false);
+  });
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/196_v258-yf-tnote-js.js ════ */
+try {
+(function () {
+  /* V258（老師 11/16「講稿部分，長卷尚未同步；不只是換頁，換段落就要」）
+     長卷（yf/index.html?embed=1）每換一頁、每按一步、讀詩每換一段，會送 yfStep 給這一層；
+     這裡記下來，交給 186 的講稿同步送出去（位置代號 yf:<長卷頁代號>#<第幾步>，讀詩是 yf:讀詩·<作品名>#<第幾段>）。
+     只送位置，不送內容。186 的 send() 透過 window.V217TN_EXT 取得長卷頁的代號。 */
+  var cur = null;   /* { key, step, h } */
+  function isYf(s) { return !!s && s.type === 'yf'; }
+  window.V217TN_EXT = function (s) {
+    if (!isYf(s) || !cur) return null;
+    return { id: ('yf:' + cur.key + (cur.step >= 0 ? '#' + cur.step : '')).slice(0, 80), h: ('長卷　' + (cur.h || cur.key)).slice(0, 60) };
+  };
+  window.addEventListener('message', function (e) {
+    var d = e.data; if (!d || typeof d !== 'object' || !d.yfStep) return;
+    var fs = document.querySelectorAll('iframe.wk-yf-frame'), mine = false;
+    for (var i = 0; i < fs.length; i++) if (fs[i].contentWindow === e.source && fs[i].style.display !== 'none') mine = true;
+    if (!mine) return;   /* 只認正在顯示的那個長卷（一般畫面、投影各一個） */
+    cur = { key: String(d.yfStep.key || ''), step: +d.yfStep.step, h: String(d.yfStep.h || '') };
+    if (isNaN(cur.step)) cur.step = -1;
+    if (window.V217TN && window.V217TN.now) window.V217TN.now();
+  });
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/197_v260-hj-tnote-js.js ════ */
+try {
+(function () {
+  /* V260（老師 11/17「講稿放到手機版就好」「如何對照到手機的講稿，一併設計」；規範：教學系統 docs/規格_課文畫卷製作規範.md §12）
+     課文畫卷（hj/index.html?l=<課代號>）嵌在網站裡時，每走一步送 hjStep {l:課代號, id:步驟代號, i:第幾步, n:總步數}；
+     這裡記下來，交給 186 的講稿同步送出去（位置代號 hj:<課代號>:<步驟代號>，例 hj:changgan:3-1/mean）。只送位置，不送內容。
+     只認「正在顯示的那個畫卷 iframe」：class 要有 wk-hj-frame（之後接進課文頁的入口要用這個 class），而且看得到。
+     ⚠ 同名陷阱（AGENTS.md §10.3）：window.V217TN_EXT 原本是 196（樂府長卷）定義的。本檔先存下原本的，
+       畫卷沒有位置（不在畫卷、畫卷藏起來）時呼叫原本的 → 長卷照常同步。實際生效的 V217TN_EXT＝本檔這一支（它再叫 196 的）。 */
+  var prev = window.V217TN_EXT;
+  var cur = null, src = null;   /* cur＝{ l, id, i, n }；src＝送來的那個 iframe */
+  function shown(f) { return !!f && f.isConnected && f.style.display !== 'none' && f.getClientRects().length > 0; }
+  window.V217TN_EXT = function (s) {
+    if (cur && shown(src)) return { id: ('hj:' + cur.l + ':' + cur.id).slice(0, 80), h: ('畫卷　' + cur.id + '（' + (cur.i + 1) + '/' + cur.n + '）').slice(0, 60) };
+    return prev ? prev(s) : null;
+  };
+  window.addEventListener('message', function (e) {
+    var d = e.data; if (!d || typeof d !== 'object' || !d.hjStep) return;
+    var fs = document.querySelectorAll('iframe.wk-hj-frame'), f = null;
+    for (var i = 0; i < fs.length; i++) if (fs[i].contentWindow === e.source && shown(fs[i])) f = fs[i];
+    if (!f) return;   /* 只認正在顯示的那個畫卷（一般畫面、投影可能各一個） */
+    var l = String(d.hjStep.l || '').replace(/[^\w-]/g, ''), id = String(d.hjStep.id || '').replace(/[^\w\/-]/g, '');
+    if (!l || !id) return;
+    cur = { l: l, id: id, i: +d.hjStep.i || 0, n: +d.hjStep.n || 0 }; src = f;
+    if (window.V217TN && window.V217TN.now) window.V217TN.now();
+  });
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ src/js/198_v260-hj-entry-js.js ════ */
+try {
+(function () {
+  /* V260（老師 11/18：「課文頁加按鈕」）課文畫卷的入口。
+     有畫卷的課（HJ_LESSONS），課文頁上方的按鈕列（.tp-btns，注釋／段旨／段析／翻譯那一排）多一顆「畫卷 ▸」；
+     點了蓋滿整個畫面開 hj/index.html?l=<課代號>，直接跳到這一段的「看畫」那一步。畫卷裡「✕ 回課文」（送 lbClose）關掉，回到原本那一頁。
+     iframe 的 class 是 wk-hj-frame：197 認這個 class 把畫卷位置送給手機講稿；關掉就移除，197 自動退回長卷／課文的同步。
+     一般畫面、投影都能開：投影時蓋在投影層上面（z-index 最高），網站的畫筆、換頁列在畫卷底下，畫卷自己有上一步／下一步。 */
+  var HJ_LESSONS = { '樂府詩選—長干行': 'changgan' };
+  var BOX = 'hj-anim';
+
+  function segOf() {   /* 現在是這一課的第幾段課文（0 起算）；不是課文頁回 -1 */
+    if (!wkSlides || !wkSlides[wkIdx] || wkSlides[wkIdx].type !== 'textpage') return -1;
+    var n = 0;
+    for (var i = 0; i < wkIdx; i++) if (wkSlides[i].type === 'textpage') n++;
+    return n;
+  }
+  function close() { var b = document.getElementById(BOX); if (b) b.remove(); window.focus(); }
+
+  window.hjOpen = function () {
+    var key = HJ_LESSONS[wkKey]; if (!key || document.getElementById(BOX)) return;
+    var seg = segOf(), want = seg >= 0 ? 'pan-' + seg : null;
+    var box = document.createElement('div');
+    box.id = BOX;
+    box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#F4F0E7';
+    var f = document.createElement('iframe');
+    f.className = 'wk-hj-frame'; f.title = '課文畫卷'; f.setAttribute('allow', 'fullscreen');
+    f.style.cssText = 'width:100%;height:100%;border:0;display:block';
+    f.src = 'hj/index.html?l=' + key;
+    box.appendChild(f);
+    (document.fullscreenElement || document.body).appendChild(box);
+    /* 畫卷第一次回報位置（剛載入＝卷首）時，跳到這一段的看畫 */
+    function first(e) {
+      if (e.source !== f.contentWindow || !e.data || !e.data.hjStep) return;
+      window.removeEventListener('message', first);
+      if (want && e.data.hjStep.id !== want) f.contentWindow.postMessage({ hjCmd: 'go', id: want }, '*');
+    }
+    window.addEventListener('message', first);
+    setTimeout(function () { try { f.focus(); } catch (er) {} }, 400);
+  };
+  window.addEventListener('message', function (e) {
+    var b = document.getElementById(BOX), f = b && b.querySelector('iframe');
+    if (f && e.source === f.contentWindow && e.data && e.data.lbClose) close();
+  });
+
+  /* 課文頁的按鈕列加「畫卷 ▸」（一般畫面、投影各自重畫，所以每次換頁都補） */
+  var _render = wkRenderCurrent;
+  wkRenderCurrent = function () {
+    var r = _render.apply(this, arguments);
+    try {
+      if (HJ_LESSONS[wkKey] && segOf() >= 0) {
+        document.querySelectorAll('#wk-slide-area .tp-btns, #wkfs-body .tp-btns').forEach(function (row) {
+          if (row.querySelector('.tp-b-hj')) return;
+          var b = document.createElement('button');
+          b.className = 'tp-b tp-b-hj'; b.type = 'button'; b.textContent = '畫卷 ▸';
+          b.onclick = function (ev) { ev.stopPropagation(); window.hjOpen(); };
+          row.appendChild(b);
+        });
+      }
+    } catch (er) { setTimeout(function () { throw er; }); }
+    return r;
+  };
+})();
+} catch (e) { setTimeout(function () { throw e; }); }
 /* ════ src/js/136_v113-ver-js.js ════ */
 try {
 
 (function () {
-  window.APP_VERSION = 'V233';
+  window.APP_VERSION = 'V261';
   function setVer() { var d = document.getElementById('v88-ver'); if (d) d.textContent = window.APP_VERSION; }
   setVer(); if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setVer);
 })();
+} catch (e) { setTimeout(function () { throw e; }); }
+/* ════ 學生版：不放答案總覽（習作答案總覽、A卷對答案總覽）（build_stu_text.py 加，老師 11/18） ════ */
+try {
+  (function () {
+    var prev = wkParseSlides;
+    wkParseSlides = function () { return prev.apply(this, arguments).filter(function (s) { return !s || (s.type !== 'work_answers' && s.type !== 'asheet'); }); };
+  })();
 } catch (e) { setTimeout(function () { throw e; }); }

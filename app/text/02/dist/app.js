@@ -7642,3 +7642,10 @@ try {
   setVer(); if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setVer);
 })();
 } catch (e) { setTimeout(function () { throw e; }); }
+/* ════ 學生版：不放答案總覽（習作答案總覽、A卷對答案總覽）（build_stu_text.py 加，老師 11/18） ════ */
+try {
+  (function () {
+    var prev = wkParseSlides;
+    wkParseSlides = function () { return prev.apply(this, arguments).filter(function (s) { return !s || (s.type !== 'work_answers' && s.type !== 'asheet'); }); };
+  })();
+} catch (e) { setTimeout(function () { throw e; }); }
