@@ -502,12 +502,22 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
      原因：考完還沒登分、或有考但沒交卷的同學，後台都是「沒分數」，個別視窗會叫他們「找老師補考」。 */
   var MP_EACH = false;
   var MP_NOTE = { id: 'n20261120', until: '2026-11-20T16:30:00+08:00', title: '成績補登公告', html: '成績補登至<br><b class="mp-when" style="margin:4px 0">11/20（五）16:30</b>截止，請盡速交齊。' };
+  /* 11/19 老師（續）：「找老師補考先暫停，先推給請假的人就好，提醒他們明天之前沒約補考，一律 0 分登記」
+     → 請假待補考的（st＝leave，不含「待補交」）在公告下面多列自己的考卷＋0 分提醒；其他人只看公告。 */
+  var MP_LEAVE = { until: '2026-11-21T00:00:00+08:00', html: '<b style="color:var(--red)">明天 11/20（五）前沒找老師約補考，一律以 0 分登記。</b>' };
+  function leaveExams() { return (D.items || []).filter(function (it) { return it.st === 'leave' && !(it.leave && it.leave.k === '交'); }); }
   function notePop() {
-    if (!D || D.teacher || !D.me || !MP_NOTE || Date.now() >= Date.parse(MP_NOTE.until)) return;
+    if (!D || D.teacher || !D.me) return;
+    var now = Date.now(), showN = MP_NOTE && now < Date.parse(MP_NOTE.until), lv = now < Date.parse(MP_LEAVE.until) ? leaveExams() : [];
+    if (!showN && !lv.length) return;
     var me = D.me, key = MP_NOTE.id + '|' + D.today;
     if (!me.preview && lsGet('stuapp_notepop_v1') === key) return;
+    var h = showN ? '<div class="mp-g" style="text-align:center;font-size:17px">' + MP_NOTE.html + '</div>' : '';
+    if (lv.length) h += '<div class="mp-g"><div class="mp-t">你請假、還沒補考的</div>' + lv.map(function (it) {
+      return '<div class="mp-i"><span class="pill b">請假待補</span><span class="mp-n">' + esc(it.title || tname(it.type)) + '</span></div>';
+    }).join('') + '<div class="mp-how">' + MP_LEAVE.html + '</div></div>';
     app.dialog.create({
-      title: MP_NOTE.title, content: '<div class="mp" style="text-align:center;font-size:17px">' + MP_NOTE.html + '</div>', cssClass: 'mp-dlg',
+      title: showN ? MP_NOTE.title : '請假補考提醒', content: '<div class="mp">' + h + '</div>', cssClass: 'mp-dlg',
       buttons: [{ text: '我知道了', bold: true, onClick: function () { if (!me.preview) lsSet('stuapp_notepop_v1', key); } }]
     }).open();
   }
@@ -631,9 +641,15 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; });
     var mq = miss.filter(function (it) { return it.type === '註釋小考'; }), ma = miss.filter(function (it) { return it.type === 'A卷'; }),
       mo = miss.filter(function (it) { return it.type !== '註釋小考' && it.type !== 'A卷'; });
+    if (!MP_EACH) {   /* 11/19 老師：「找老師補考」暫停；只提醒請假待補考的（0 分提醒），其他缺的只寫補登截止 */
+      var lv = Date.now() < Date.parse(MP_LEAVE.until) ? leaveExams() : [], ot = miss.filter(function (it) { return lv.indexOf(it) < 0; });
+      if (lv.length) S.push({ c: '', go: 'miss', b: '請假待補考：' + names(lv), s: '明天 11/20（五）前沒找老師約補考，一律以 0 分登記' });
+      if (ot.length) S.push({ c: '', go: 'miss', b: '還沒有成績：' + names(ot), s: Date.now() < Date.parse(MP_NOTE.until) ? '成績補登至 11/20（五）16:30 截止，請盡速交齊' : '有問題請找老師' });
+    } else {
     if (mq.length) S.push({ c: '', go: 'miss', b: '補考小考：' + names(mq), s: (when ? esc(when) : '下一節國文課下課') + '，去找老師補考' + (when2 ? '（來不及就 ' + esc(when2) + '）' : '') });
     if (ma.length) S.push({ c: '', go: 'miss', b: '補考大卷：' + names(ma), s: '找小老師補考' });
     if (mo.length) S.push({ c: '', go: 'miss', b: '補交：' + names(mo), s: '盡快補交' });
+    }
     var tm = addD(td, 1);
     [[td, '今天'], [tm, '明天']].forEach(function (p) {
       var a = items.filter(function (it) { return it.st === 'open' && it.due === p[0]; });
