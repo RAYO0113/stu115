@@ -497,7 +497,23 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     for (var i = 1; i < p.length; i++) { if (p[i] === last + 1) last = p[i]; else break; }
     return (x.d === td ? '今天' : md(x.d)) + (last ? '第 ' + last + ' 節下課' : '下課');
   }
+  /* 11/19 老師：「全部都不要個別推送了，今天全部改推：成績補登至 11/20 16:30 截止，請盡速交齊」
+     → 個別缺交視窗關掉（MP_EACH＝false，程式留著）；改成全體同一則公告，一天跳一次，截止時間一過就不再跳。
+     原因：考完還沒登分、或有考但沒交卷的同學，後台都是「沒分數」，個別視窗會叫他們「找老師補考」。 */
+  var MP_EACH = false;
+  var MP_NOTE = { id: 'n20261120', until: '2026-11-20T16:30:00+08:00', title: '成績補登公告', html: '成績補登至<br><b class="mp-when" style="margin:4px 0">11/20（五）16:30</b>截止，請盡速交齊。' };
+  function notePop() {
+    if (!D || D.teacher || !D.me || !MP_NOTE || Date.now() >= Date.parse(MP_NOTE.until)) return;
+    var me = D.me, key = MP_NOTE.id + '|' + D.today;
+    if (!me.preview && lsGet('stuapp_notepop_v1') === key) return;
+    app.dialog.create({
+      title: MP_NOTE.title, content: '<div class="mp" style="text-align:center;font-size:17px">' + MP_NOTE.html + '</div>', cssClass: 'mp-dlg',
+      buttons: [{ text: '我知道了', bold: true, onClick: function () { if (!me.preview) lsSet('stuapp_notepop_v1', key); } }]
+    }).open();
+  }
   function missPop() {
+    notePop();
+    if (!MP_EACH) return;
     if (!D || D.teacher || !D.me) return;
     var me = D.me, td = D.today, key = td + '|' + me.cls + '|' + me.seat;
     if (!me.preview && lsGet(MP) === key) return;
