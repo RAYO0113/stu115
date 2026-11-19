@@ -505,7 +505,11 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   /* 11/19 老師（續）：「找老師補考先暫停，先推給請假的人就好，提醒他們明天之前沒約補考，一律 0 分登記」
      → 請假待補考的（st＝leave，不含「待補交」）在公告下面多列自己的考卷＋0 分提醒；其他人只看公告。 */
   var MP_LEAVE = { until: '2026-11-21T00:00:00+08:00', html: '<b style="color:var(--red)">明天 11/20（五）前沒找老師約補考，一律以 0 分登記。</b>' };
-  function leaveExams() { return (D.items || []).filter(function (it) { return it.st === 'leave' && !(it.leave && it.leave.k === '交'); }); }
+  /* 11/20（後台 gr-24）：老師在成績系統登記的補考約定 D.mk＝[{item,title,type,date,period}]（只有還沒分數的）；舊後台沒有 mk → 空陣列。
+     已約好的不再列入「請假待補考／0 分」提醒，改顯示約好的時間 */
+  function mkOf(it) { return (D.mk || []).filter(function (m) { return m.item === it.id && m.date; })[0] || null; }
+  function mkWhen(m, td) { var p = String(m.period == null ? '' : m.period); return (m.date === td ? '今天' : md(m.date)) + (p ? ' ' + (/^\d+$/.test(p) ? '第 ' + p + ' 節' : p) : ''); }
+  function leaveExams() { return (D.items || []).filter(function (it) { return it.st === 'leave' && !(it.leave && it.leave.k === '交') && !mkOf(it); }); }
   function notePop() {
     if (!D || D.teacher || !D.me) return;
     var now = Date.now(), showN = MP_NOTE && now < Date.parse(MP_NOTE.until), lv = now < Date.parse(MP_LEAVE.until) ? leaveExams() : [];
@@ -598,6 +602,8 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     else if (it.st === 'late') { ic = '<div class="ic"><i class="ti ti-clock"></i></div>'; pill = '<span class="pill n">遲交 ' + it.days + ' 天' + (it.pen ? ' −' + it.pen : '') + '</span>'; }
     else if (it.st === 'sub') { ic = '<div class="ic g"><i class="ti ti-circle-check"></i></div>'; pill = '<span class="pill g">已交・待登分</span>'; sub = tname(it.type) + '・' + md(it.sub) + ' 交' + (it.days ? '（遲交 ' + it.days + ' 天' + (it.pen ? ' −' + it.pen : '') + '）' : ''); }   /* 後台 gr-12：有繳交日、老師還沒登分 */
     else { ic = '<div class="ic g"><i class="ti ti-file-pencil"></i></div>'; pill = '<span class="pill g">' + rel(it.due, td) + '</span>'; }
+    var mk = (it.st === 'missing' || it.st === 'leave') && mkOf(it);   /* 11/20：已約補考 → 顯示約好的時間 */
+    if (mk) { ic = '<div class="ic g"><i class="ti ti-calendar-check"></i></div>'; pill = '<span class="pill ' + (mk.date < td ? 'r' : 'b') + '">已約補考</span>'; sub = tname(it.type) + '・' + mkWhen(mk, td) + (mk.date < td ? '（已過，快找老師）' : ''); }
     return '<div class="it">' + ic + '<div class="tx"><b>' + esc(it.title || tname(it.type)) + '</b><span>' + esc(sub) + '</span></div>' + pill + '</div>';
   }
 
@@ -641,8 +647,12 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     var miss = items.filter(function (it) { return it.st === 'missing' || it.st === 'leave'; });
     var mq = miss.filter(function (it) { return it.type === '註釋小考'; }), ma = miss.filter(function (it) { return it.type === 'A卷'; }),
       mo = miss.filter(function (it) { return it.type !== '註釋小考' && it.type !== 'A卷'; });
+    (D.mk || []).forEach(function (m) {   /* 11/20：已約補考排最前面 */
+      var over = m.date < td;
+      S.push({ c: '', go: 'miss', b: '已約補考：' + esc(m.title || tname(m.type)), s: over ? '約好的 ' + esc(mkWhen(m, td)) + ' 已經過了，快去找老師' : esc(mkWhen(m, td)) + '，找老師補考' });
+    });
     if (!MP_EACH) {   /* 11/19 老師：「找老師補考」暫停；只提醒請假待補考的（0 分提醒），其他缺的只寫補登截止 */
-      var lv = Date.now() < Date.parse(MP_LEAVE.until) ? leaveExams() : [], ot = miss.filter(function (it) { return lv.indexOf(it) < 0; });
+      var lv = Date.now() < Date.parse(MP_LEAVE.until) ? leaveExams() : [], ot = miss.filter(function (it) { return lv.indexOf(it) < 0 && !mkOf(it); });
       if (lv.length) S.push({ c: '', go: 'miss', b: '請假待補考：' + names(lv), s: '明天 11/20（五）前沒找老師約補考，一律以 0 分登記' });
       if (ot.length) S.push({ c: '', go: 'miss', b: '還沒有成績：' + names(ot), s: Date.now() < Date.parse(MP_NOTE.until) ? '成績補登至 11/20（五）16:30 截止，請盡速交齊' : '有問題請找老師' });
     } else {
