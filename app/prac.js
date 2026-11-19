@@ -565,5 +565,28 @@
     });
   }
 
+  /* 11/20 學生回報：手機斷網時題目的圖載不下來，畫面只剩「(A)(B)」或空白，看起來像題目缺圖。
+     → 題目圖（.dr-fig）載入失敗就在原位顯示提示＋「重新載入」；網路恢復時自動再試一次。 */
+  function figRetry(img) {
+    var f = img.closest('.dr-fig'); if (f) f.classList.remove('dr-fail');
+    var u = img.getAttribute('data-src') || img.getAttribute('src'); img.setAttribute('data-src', u);
+    img.src = u + (u.indexOf('?') < 0 ? '?' : '&') + 'r=' + Date.now();
+  }
+  document.addEventListener('error', function (e) {
+    var img = e.target; if (!img || img.tagName !== 'IMG') return;
+    var f = img.closest && img.closest('.dr-fig'); if (!f || f.classList.contains('dr-fail')) return;
+    f.classList.add('dr-fail');
+    if (!f.querySelector('.dr-fmsg')) {
+      var m = document.createElement('div'); m.className = 'dr-fmsg';
+      m.innerHTML = '<span>⚠ 圖片沒有載入（可能沒有網路）</span><a class="dr-fre">重新載入</a>';
+      f.insertBefore(m, f.firstChild);
+    }
+  }, true);
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.dr-fre'); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var img = b.closest('.dr-fig').querySelector('img'); if (img) figRetry(img);
+  }, true);
+  window.addEventListener('online', function () { [].forEach.call(document.querySelectorAll('.dr-fig.dr-fail img'), figRetry); });
   window.STUPRAC = { cards: cards, bind: bind, teacher: teacher, flush: flush, memRange: memRange, quizFix: quizFix };
 })();
