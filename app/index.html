@@ -501,7 +501,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
      → 個別缺交視窗關掉（MP_EACH＝false，程式留著）；改成全體同一則公告，一天跳一次，截止時間一過就不再跳。
      原因：考完還沒登分、或有考但沒交卷的同學，後台都是「沒分數」，個別視窗會叫他們「找老師補考」。 */
   var MP_EACH = false;
-  var MP_NOTE = { id: 'n20261120', until: '2026-11-20T16:30:00+08:00', title: '成績補登公告', html: '成績補登至<br><b class="mp-when" style="margin:4px 0">11/20（五）16:30</b>截止，請盡速交齊。' };
+  var MP_NOTE = { id: 'n20261120b',until: '2026-11-20T16:30:00+08:00', title: '成績補登公告', html: '成績補登至<br><b class="mp-when" style="margin:4px 0">11/20（五）16:30</b>截止，請盡速交齊。' };
   /* 11/19 老師（續）：「找老師補考先暫停，先推給請假的人就好，提醒他們明天之前沒約補考，一律 0 分登記」
      → 請假待補考的（st＝leave，不含「待補交」）在公告下面多列自己的考卷＋0 分提醒；其他人只看公告。 */
   var MP_LEAVE = { until: '2026-11-21T00:00:00+08:00', html: '<b style="color:var(--red)">明天 11/20（五）前沒找老師約補考，一律以 0 分登記。</b>' };
