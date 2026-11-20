@@ -99,6 +99,12 @@ body{color:var(--ink)}
 .mp-t{font-weight:700;font-size:15.5px;margin-bottom:4px}.mp-i{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.mp-i .pill{flex:none;margin-top:2px}.mp-n{min-width:0}
 .mp-how{margin-top:6px;font-weight:500}.mp-when{display:block;font-size:19px;color:var(--red);margin:2px 0 0 1.1em}.mp-alt{display:block;font-size:13px;color:var(--muted);margin-left:1.5em}
 .pill.b{background:rgba(46,90,122,.16);color:#2e5a7a}.dark .pill.b{color:#9cc4ff}
+.mkq{margin-top:6px;padding:7px 9px;border-radius:10px;background:rgba(46,122,74,.10);color:#245c2f;font-size:13px;line-height:1.45}
+.mkq em{display:block;font-style:normal}.mkq p{display:flex;gap:6px;margin:6px 0 0;padding:0}
+.mkq.w{background:rgba(196,140,20,.13);color:#7a5200}.mkq.n{background:rgba(163,40,27,.10);color:#8a2a20}
+.mkq button{width:auto;flex:0 0 auto;padding:5px 14px;border:0;border-radius:14px;background:#2e7a4a;color:#fff;font-size:13px;font-weight:600;line-height:1.2}
+.mkq.w button{background:#b07d12}.mkq button.g{background:rgba(0,0,0,.10);color:inherit}
+.dark .mkq{color:#9fd9b0}.dark .mkq.w{color:#f0c46a}.dark .mkq.n{color:#f2a49a}
 .pill{font-size:12.5px;padding:3px 10px;border-radius:99px;white-space:nowrap;font-weight:500}
 .pill.r{background:var(--red);color:#fff}.pill.g{background:rgba(200,147,26,.18);color:#9a6c0c}.pill.n{background:var(--soft);color:var(--muted)}.pill.k{background:rgba(47,125,85,.14);color:var(--ok)}
 .dark .pill.g{color:var(--gold)}
@@ -510,6 +516,44 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
      已約好的不再列入「請假待補考／0 分」提醒，改顯示約好的時間 */
   function mkOf(it) { return (D.mk || []).filter(function (m) { return m.item === it.id && m.date; })[0] || null; }
   function mkWhen(m, td) { var p = String(m.period == null ? '' : m.period); return md(m.date) + (p ? ' ' + (/^\d+$/.test(p) ? '第 ' + p + ' 節' : p) : ''); }
+  /* 11/20（後台 gr-25）學生線上申請中午補考：老師開放哪幾天中午（D.mkOpen），只開放 A卷（D.mkElig），送出後要老師同意才算約好。
+     D.mkRq＝[{item,title,type,date,period,st}]，st：req 等老師確認／no 老師沒有同意。舊後台沒有這些欄位 → 不顯示申請按鈕 */
+  function mkRqOf(it) { return (D.mkRq || []).filter(function (m) { return m.item === it.id; })[0] || null; }
+  function mkCanReq(it) { return (D.mkElig || []).indexOf(it.id) >= 0 && (D.mkOpen || []).length > 0 && !mkOf(it); }
+  function mkReqBox(it, td) {   /* 列表裡每張 A卷下面的申請區 */
+    var rq = mkRqOf(it), can = mkCanReq(it), id = esc(it.id);
+    if (rq && rq.st === 'req') return '<div class="mkq w"><em><i class="ti ti-clock"></i> 已申請 ' + esc(md(rq.date)) + ' 中午補考，等老師確認</em><p><button data-mkreq="' + id + '">改日期</button><button class="g" data-mkcan="' + id + '">取消申請</button></p></div>';
+    if (rq && rq.st === 'no') return '<div class="mkq n"><em><i class="ti ti-alert-triangle"></i> 老師沒有同意 ' + esc(md(rq.date)) + ' 中午，請下課找老師約</em>' + (can ? '<p><button data-mkreq="' + id + '">重新申請</button></p>' : '') + '</div>';
+    if (can) return '<div class="mkq"><em><i class="ti ti-calendar-event"></i> 可以申請中午到老師那裡補考</em><p><button data-mkreq="' + id + '">申請中午補考</button></p></div>';
+    return '';
+  }
+  function mkCall(req, msg) {
+    var t = lsGet(TK); if (!t) { showLogin(''); return; }
+    req.action = 'meMkReq'; req.t = t;
+    app.preloader.show();
+    fetch(CFG.api, { method: 'POST', body: JSON.stringify(req), redirect: 'follow' }).then(function (r) { return r.json(); }).then(function (d) {
+      app.preloader.hide();
+      if (!d.ok) { if (d.auth === false) { lsSet(TK, ''); showLogin('登入已過期，請重新登入'); } else app.dialog.alert(d.error || '送出失敗', '補考申請'); return; }
+      ['items', 'mk', 'mkRq', 'mkOpen', 'mkElig', 'sem', 'nx'].forEach(function (k) { if (k in d) D[k] = d[k]; });
+      render();
+      app.toast.create({ text: msg, closeTimeout: 3000 }).open();
+    }).catch(function () { app.preloader.hide(); app.dialog.alert('連不上，請檢查網路後再試一次', '補考申請'); });
+  }
+  function mkPick(id) {
+    var it = (D.items || []).filter(function (x) { return x.id === id; })[0]; if (!it) return;
+    if (ssGet(PV)) { app.dialog.alert('老師預覽模式不能申請', '補考申請'); return; }
+    var days = D.mkOpen || [];
+    if (!days.length) { app.dialog.alert('老師目前沒有開放中午補考，請下課找老師約', '補考申請'); return; }
+    app.actions.create({ buttons: [[{ text: '選一天中午到老師那裡補考：' + esc(it.title || tname(it.type)), label: true }].concat(days.map(function (d) {
+      return { text: md(d) + ' 中午', onClick: function () { mkCall({ item: id, date: d }, '已送出 ' + md(d) + ' 中午補考申請，等老師確認'); } };
+    })), [{ text: '取消', color: 'red' }]] }).open();
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-mkreq],[data-mkcan]'); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    if (b.hasAttribute('data-mkreq')) mkPick(b.getAttribute('data-mkreq'));
+    else { var id = b.getAttribute('data-mkcan'); app.dialog.confirm('取消這個中午補考申請？', '補考申請', function () { mkCall({ item: id, cancel: 1 }, '已取消申請'); }); }
+  }, true);
   function leaveExams() { return (D.items || []).filter(function (it) { return it.st === 'leave' && !(it.leave && it.leave.k === '交') && !mkOf(it); }); }
   function notePop() {
     if (!D || D.teacher || !D.me) return;
@@ -605,7 +649,8 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     else { ic = '<div class="ic g"><i class="ti ti-file-pencil"></i></div>'; pill = '<span class="pill g">' + rel(it.due, td) + '</span>'; }
     var mk = (it.st === 'missing' || it.st === 'leave') && mkOf(it);   /* 11/20：已約補考 → 顯示約好的時間 */
     if (mk) { ic = '<div class="ic g"><i class="ti ti-calendar-check"></i></div>'; pill = '<span class="pill ' + (mk.date < td ? 'r' : 'b') + '">已約補考</span>'; sub = tname(it.type) + '・' + mkWhen(mk, td) + (mk.date < td ? '（已過，快找老師）' : ''); }
-    return '<div class="it">' + ic + '<div class="tx"><b>' + esc(it.title || tname(it.type)) + '</b><span>' + esc(sub) + '</span></div>' + pill + '</div>';
+    var box = (it.st === 'missing' || it.st === 'leave') ? mkReqBox(it, td) : '';   /* 11/20 gr-25 */
+    return '<div class="it' + (box ? ' hasmk' : '') + '">' + ic + '<div class="tx"><b>' + esc(it.title || tname(it.type)) + '</b><span>' + esc(sub) + '</span>' + box + '</div>' + pill + '</div>';
   }
 
   function renderHome(td) {
@@ -652,6 +697,11 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
       var over = m.date < td;
       S.push({ c: '', go: 'miss', b: '已約補考：' + esc(m.title || tname(m.type)), s: over ? '約好的 ' + esc(mkWhen(m, td)) + ' 已經過了，快去找老師' : esc(mkWhen(m, td)) + '，找老師補考' });
     });
+    (D.mkRq || []).forEach(function (m) {   /* 11/20 gr-25：線上申請 */
+      S.push({ c: '', go: 'miss', b: (m.st === 'no' ? '補考申請沒通過：' : '已申請中午補考：') + esc(m.title || tname(m.type)), s: m.st === 'no' ? '老師沒有同意 ' + esc(md(m.date)) + ' 中午，請下課找老師約' : esc(md(m.date)) + ' 中午・等老師確認' });
+    });
+    var cr = miss.filter(function (it) { return mkCanReq(it) && !mkRqOf(it); });
+    if (cr.length) S.push({ c: '', go: 'miss', b: '可以申請中午補考：' + names(cr), s: '老師開放 ' + (D.mkOpen || []).map(function (d) { return md(d); }).join('、') + ' 中午，點這裡去申請' });
     if (!MP_EACH) {   /* 11/19 老師：「找老師補考」暫停；只提醒請假待補考的（0 分提醒），其他缺的只寫補登截止 */
       var lv = Date.now() < Date.parse(MP_LEAVE.until) ? leaveExams() : [], ot = miss.filter(function (it) { return lv.indexOf(it) < 0 && !mkOf(it); });
       if (lv.length) S.push({ c: '', go: 'miss', b: '請假待補考：' + names(lv), s: '11/20（五）前沒找老師約補考，一律以 0 分登記' });
