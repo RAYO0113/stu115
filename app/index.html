@@ -504,11 +504,11 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
   var MP_NOTE = { id: 'n20261120b',until: '2026-11-20T16:30:00+08:00', title: '成績補登公告', html: '成績補登至<br><b class="mp-when" style="margin:4px 0">11/20（五）16:30</b>截止，請盡速交齊。' };
   /* 11/19 老師（續）：「找老師補考先暫停，先推給請假的人就好，提醒他們明天之前沒約補考，一律 0 分登記」
      → 請假待補考的（st＝leave，不含「待補交」）在公告下面多列自己的考卷＋0 分提醒；其他人只看公告。 */
-  var MP_LEAVE = { until: '2026-11-21T00:00:00+08:00', html: '<b style="color:var(--red)">明天 11/20（五）前沒找老師約補考，一律以 0 分登記。</b>' };
+  var MP_LEAVE = { until: '2026-11-21T00:00:00+08:00', html: '<b style="color:var(--red)">11/20（五）前沒找老師約補考，一律以 0 分登記。</b>' };
   /* 11/20（後台 gr-24）：老師在成績系統登記的補考約定 D.mk＝[{item,title,type,date,period}]（只有還沒分數的）；舊後台沒有 mk → 空陣列。
      已約好的不再列入「請假待補考／0 分」提醒，改顯示約好的時間 */
   function mkOf(it) { return (D.mk || []).filter(function (m) { return m.item === it.id && m.date; })[0] || null; }
-  function mkWhen(m, td) { var p = String(m.period == null ? '' : m.period); return (m.date === td ? '今天' : md(m.date)) + (p ? ' ' + (/^\d+$/.test(p) ? '第 ' + p + ' 節' : p) : ''); }
+  function mkWhen(m, td) { var p = String(m.period == null ? '' : m.period); return md(m.date) + (p ? ' ' + (/^\d+$/.test(p) ? '第 ' + p + ' 節' : p) : ''); }
   function leaveExams() { return (D.items || []).filter(function (it) { return it.st === 'leave' && !(it.leave && it.leave.k === '交') && !mkOf(it); }); }
   function notePop() {
     if (!D || D.teacher || !D.me) return;
@@ -653,7 +653,7 @@ html.dr-lock,html.dr-lock body{overflow:hidden}
     });
     if (!MP_EACH) {   /* 11/19 老師：「找老師補考」暫停；只提醒請假待補考的（0 分提醒），其他缺的只寫補登截止 */
       var lv = Date.now() < Date.parse(MP_LEAVE.until) ? leaveExams() : [], ot = miss.filter(function (it) { return lv.indexOf(it) < 0 && !mkOf(it); });
-      if (lv.length) S.push({ c: '', go: 'miss', b: '請假待補考：' + names(lv), s: '明天 11/20（五）前沒找老師約補考，一律以 0 分登記' });
+      if (lv.length) S.push({ c: '', go: 'miss', b: '請假待補考：' + names(lv), s: '11/20（五）前沒找老師約補考，一律以 0 分登記' });
       if (ot.length) S.push({ c: '', go: 'miss', b: '還沒有成績：' + names(ot), s: Date.now() < Date.parse(MP_NOTE.until) ? '成績補登至 11/20（五）16:30 截止，請盡速交齊' : '有問題請找老師' });
     } else {
     if (mq.length) S.push({ c: '', go: 'miss', b: '補考小考：' + names(mq), s: (when ? esc(when) : '下一節國文課下課') + '，去找老師補考' + (when2 ? '（來不及就 ' + esc(when2) + '）' : '') });
