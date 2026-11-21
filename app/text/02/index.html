@@ -233,5 +233,91 @@ body::after{display:none!important}
 <script src="../nav.js"></script>
 <script src="dist/app.js?v=eb56aa2c"></script>
 <script>window.addEventListener('load', function () { setTimeout(function () { if (typeof showWenxue === 'function') showWenxue("身為魚販"); }, 0); });</script>
+<style id="stu-mobile-nav-css">/* 11/21 老師：手機左右滑動換頁；小標籤（章節按鈕）預設收起 */
+.stu-sec-tg{display:none}
+@media (max-width:600px){
+.stu-sec-tg{display:flex;align-items:center;gap:6px;width:100%;margin:0 0 8px;padding:8px 12px;border:1px solid #c9b89a;border-radius:10px;background:#fbf6ec;color:#5a3d22;font:inherit;font-size:15px;text-align:left;cursor:pointer}
+.stu-sec-tg b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.stu-sec-tg i{font-style:normal;font-size:12px;color:#8a7258}
+body.stu-sec-closed #wk-sections{display:none!important}
+#display-tab{transform:scale(.72);transform-origin:right center;opacity:.6}
+.stu-swipe-tip{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;padding:8px 16px;border-radius:20px;background:rgba(42,29,16,.88);color:#fff;font-size:14px;white-space:nowrap;pointer-events:none;transition:opacity .4s}
+}
+</style>
+<script id="stu-mobile-nav-js">
+/* 11/21 老師：「學生版面可以開放左右滑動換題嗎」「小標籤預設也都收起來，根本按不到箭頭」——只在手機（寬 ≤600）作用，iPad／電腦不變 */
+(function () {
+  var mq = window.matchMedia('(max-width:600px)');
+  function phone() { return mq.matches; }
+  /* ── 小標籤收起：#wk-sections 上方加「目錄」鈕，顯示目前章節；選了章節自動收回 ── */
+  var tg = null;
+  function curName() {
+    var a = document.querySelector('#wk-sections .wk-sec-active');
+    return a ? a.textContent.replace(/\s+/g, ' ').trim() : '';
+  }
+  function paint() {
+    if (!tg) return;
+    var open = !document.body.classList.contains('stu-sec-closed');
+    tg.innerHTML = '☰ 目錄<b>' + (curName() ? '目前：' + curName() : '') + '</b><i>' + (open ? '收起 ▲' : '展開 ▼') + '</i>';
+  }
+  function setup() {
+    var sec = document.getElementById('wk-sections');
+    if (!sec || tg) return !!tg;
+    tg = document.createElement('button');
+    tg.type = 'button'; tg.className = 'stu-sec-tg';
+    sec.parentNode.insertBefore(tg, sec);
+    document.body.classList.add('stu-sec-closed');
+    tg.onclick = function () { document.body.classList.toggle('stu-sec-closed'); paint(); };
+    sec.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.wk-sec-btn');
+      if (b && phone() && !/▾|▼/.test(b.textContent)) setTimeout(function () { document.body.classList.add('stu-sec-closed'); paint(); }, 50);   /* 下拉式的（字詞辨析 ▾）要等選完 */
+    });
+    new MutationObserver(paint).observe(sec, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
+    paint();
+    return true;
+  }
+  if (!setup()) { var n = 0, t = setInterval(function () { if (setup() || ++n > 40) clearInterval(t); }, 250); }
+
+  /* ── 左右滑動換頁：在投影片上水平滑（至少 60px、比垂直多一倍半、0.7 秒內） ── */
+  var sx = 0, sy = 0, st = 0, ok = false;
+  function inArea(el) { return el && el.closest && (el.closest('#wk-slide-area') || el.closest('#wkfs-body')); }
+  function scrollsX(el) {
+    for (; el && el !== document.body; el = el.parentElement) {
+      var ox = getComputedStyle(el).overflowX;
+      if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 2) return true;
+    }
+    return false;
+  }
+  document.addEventListener('touchstart', function (e) {
+    ok = false;
+    if (!phone() || e.touches.length !== 1 || !inArea(e.target)) return;
+    if (e.target.closest('input,select,textarea,[contenteditable="true"]') || scrollsX(e.target)) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); ok = true;
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (!ok) return; ok = false;
+    var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Date.now() - st > 700 || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (window.getSelection && String(window.getSelection())) return;
+    if (dx < 0 && typeof wkNext === 'function') wkNext();
+    else if (dx > 0 && typeof wkPrev === 'function') wkPrev();
+    else return;
+    var a = document.getElementById('wk-slide-area');
+    if (a && !document.getElementById('wkfs-body')) { var r = a.getBoundingClientRect(); if (r.top < 0) window.scrollBy(0, r.top - 8); }   /* 換頁後回到投影片頂端 */
+    try { localStorage.setItem('stu_swipe_tip_v1', '1'); } catch (x) {}
+  }, { passive: true });
+
+  /* 第一次進來提示一次（滑過就不再出現） */
+  function tip() {
+    if (!phone()) return;
+    try { if (localStorage.getItem('stu_swipe_tip_v1')) return; localStorage.setItem('stu_swipe_tip_v1', '1'); } catch (x) { return; }
+    var d = document.createElement('div'); d.className = 'stu-swipe-tip'; d.textContent = '👆 在題目上左右滑動，可以換上一頁／下一頁';
+    document.body.appendChild(d);
+    setTimeout(function () { d.style.opacity = '0'; }, 3500);
+    setTimeout(function () { d.remove(); }, 4200);
+  }
+  setTimeout(tip, 1500);
+})();
+</script>
 </body>
 </html>
