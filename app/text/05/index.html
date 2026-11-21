@@ -23,6 +23,18 @@
 
 
 <style id="stu-css">#wenxue-prose-list,#wenxue-extra-list{display:none}.demo-tag{font-size:.5em;margin-left:.6em;padding:2px 8px;border-radius:10px;background:#c0662a;color:#fff;vertical-align:middle}#cls-tab,#cls-panel{display:none!important}.stu-back{position:fixed;left:10px;bottom:10px;z-index:9999;padding:6px 12px;border-radius:16px;background:rgba(192,102,42,.92);color:#fff;font-size:14px;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}</style>
+<style id="stu-mobile-css">/* 11/21 老師「學生版面太亂」：手機（寬 ≤ 600）才套用。題號一行、題目整行；頁碼標籤放回題目上方；回班級網頁移到頁首右上；浮水印隱藏 */
+@media (max-width:600px){
+.wk-slide,#wkfs-body .wk-slide{padding:14px 12px!important}
+.iq-q{flex-wrap:wrap!important;row-gap:6px}
+.iq-q .iq-qt{flex:1 1 100%!important;order:5;min-width:0}
+.iq-q .iq-all{margin-left:auto!important}
+.wks-book-page{position:static!important;display:inline-block!important;top:auto!important;right:auto!important;left:auto!important;margin:0 0 8px!important}
+body::after{display:none!important}
+.tp-page{position:static!important;display:inline-block!important;top:auto!important;right:auto!important;margin:0 0 6px!important}
+.stu-back{position:absolute!important;top:10px!important;right:10px!important;left:auto!important;bottom:auto!important;padding:4px 10px!important;font-size:13px!important;box-shadow:none!important}
+}
+</style>
 </head>
 <body>
 <a class="stu-back" href="../../">← 回班級網頁</a>
