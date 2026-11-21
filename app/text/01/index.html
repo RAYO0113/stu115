@@ -233,21 +233,13 @@ body::after{display:none!important}
 <script src="../nav.js"></script>
 <script src="dist/app.js?v=5f74b3ec"></script>
 <script>window.addEventListener('load', function () { setTimeout(function () { if (typeof showWenxue === 'function') showWenxue("論語選—子路曾皙冉有公西華侍坐"); }, 0); });</script>
-<style id="stu-mobile-nav-css">/* 11/21 老師：手機左右滑動換頁；小標籤（章節按鈕）收進兩層目錄（第一層分類、第二層章節） */
-.stu-sec-tg,.stu-sec-pan{display:none}
+<style id="stu-mobile-nav-css">/* 11/21 老師：手機左右滑動換頁；小標籤（章節按鈕）預設收起 */
+.stu-sec-tg{display:none}
 @media (max-width:600px){
 .stu-sec-tg{display:flex;align-items:center;gap:6px;width:100%;margin:0 0 8px;padding:8px 12px;border:1px solid #c9b89a;border-radius:10px;background:#fbf6ec;color:#5a3d22;font:inherit;font-size:15px;text-align:left;cursor:pointer}
 .stu-sec-tg b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .stu-sec-tg i{font-style:normal;font-size:12px;color:#8a7258}
-#wk-sections{display:none!important}
-.stu-sec-pan{display:none;margin:-2px 0 10px;padding:10px;border:1px solid #c9b89a;border-radius:10px;background:#fbf6ec}
-body:not(.stu-sec-closed) .stu-sec-pan{display:block}
-.stu-cats{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px dashed #d8c9ad}
-.stu-cats button{flex:1 1 auto;padding:6px 8px;border:1px solid #c9b89a;border-radius:8px;background:#fff;color:#5a3d22;font:inherit;font-size:14px;cursor:pointer}
-.stu-cats button.on{background:#a82a2a;border-color:#a82a2a;color:#fff;font-weight:700}
-.stu-items{display:flex;flex-wrap:wrap;gap:6px}
-.stu-items button{padding:6px 10px;border:1px solid #d8c9ad;border-radius:8px;background:#fff;color:#3a2a1a;font:inherit;font-size:14px;cursor:pointer}
-.stu-items button.on{background:#f3dede;border-color:#a82a2a;color:#a82a2a;font-weight:700}
+body.stu-sec-closed #wk-sections{display:none!important}
 #display-tab{transform:scale(.72);transform-origin:right center;opacity:.6}
 .stu-swipe-tip{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;padding:8px 16px;border-radius:20px;background:rgba(42,29,16,.88);color:#fff;font-size:14px;white-space:nowrap;pointer-events:none;transition:opacity .4s}
 }
@@ -257,40 +249,30 @@ body:not(.stu-sec-closed) .stu-sec-pan{display:block}
 (function () {
   var mq = window.matchMedia('(max-width:600px)');
   function phone() { return mq.matches; }
-  /* ── 小標籤收進兩層目錄（老師：「那些籤頁不能二次分層嗎」）：原本的 #wk-sections 在手機藏起來，
-     改由「☰ 目錄」展開：第一層分類（導讀／課文／練習／字詞修辭／延伸），第二層該類的章節；點了就呼叫原本的按鈕，選完自動收回 ── */
-  var CATS = [['導讀', /^(封面|作者|題解|素養)/], ['練習', /^(✐|📓|📝)/], ['字詞修辭', /^(字·|◆|▤|🔵)/], ['延伸', /^(✎|跨閱)/], ['課文', /./]];
-  function catOf(b) { var t = b.textContent.trim(); for (var i = 0; i < CATS.length; i++) if (CATS[i][1].test(t)) return CATS[i][0]; return '課文'; }
-  var ORDER = ['導讀', '課文', '練習', '字詞修辭', '延伸'];
-  var tg = null, pan = null, cat = '';
-  function btns() { return [].slice.call(document.querySelectorAll('#wk-sections .wk-sec-btn[data-idx]')); }   /* 不含「字詞辨析 ▾」這類下拉開關，直接列裡面的每一個 */
-  function cur() { var a = document.querySelector('#wk-sections .wk-sec-btn[data-idx].wk-sec-active'); return a || null; }
-  function label(b) { return b.textContent.replace(/\s+/g, ' ').trim(); }
+  /* ── 小標籤收起：#wk-sections 上方加「目錄」鈕，顯示目前章節；選了章節自動收回 ── */
+  var tg = null;
+  function curName() {
+    var a = document.querySelector('#wk-sections .wk-sec-active');
+    return a ? a.textContent.replace(/\s+/g, ' ').trim() : '';
+  }
   function paint() {
     if (!tg) return;
-    var open = !document.body.classList.contains('stu-sec-closed'), c = cur();
-    tg.innerHTML = '☰ 目錄<b>' + (c ? '目前：' + label(c) : '') + '</b><i>' + (open ? '收起 ▲' : '展開 ▼') + '</i>';
-    if (!open) return;
-    var all = btns(), by = {};
-    all.forEach(function (b, i) { var k = catOf(b); (by[k] = by[k] || []).push(i); });
-    if (!cat || !by[cat]) cat = c ? catOf(c) : ORDER.filter(function (k) { return by[k]; })[0];
-    pan.innerHTML = '<div class="stu-cats">' + ORDER.filter(function (k) { return by[k]; }).map(function (k) { return '<button type="button" data-c="' + k + '" class="' + (k === cat ? 'on' : '') + '">' + k + '</button>'; }).join('') + '</div>' +
-      '<div class="stu-items">' + (by[cat] || []).map(function (i) { var b = all[i]; return '<button type="button" data-i="' + i + '" class="' + (b === c ? 'on' : '') + '">' + label(b).replace(/[&<>]/g, function (x) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[x]; }) + '</button>'; }).join('') + '</div>';
+    var open = !document.body.classList.contains('stu-sec-closed');
+    tg.innerHTML = '☰ 目錄<b>' + (curName() ? '目前：' + curName() : '') + '</b><i>' + (open ? '收起 ▲' : '展開 ▼') + '</i>';
   }
   function setup() {
     var sec = document.getElementById('wk-sections');
     if (!sec || tg) return !!tg;
-    tg = document.createElement('button'); tg.type = 'button'; tg.className = 'stu-sec-tg';
-    pan = document.createElement('div'); pan.className = 'stu-sec-pan';
-    sec.parentNode.insertBefore(tg, sec); sec.parentNode.insertBefore(pan, sec);
+    tg = document.createElement('button');
+    tg.type = 'button'; tg.className = 'stu-sec-tg';
+    sec.parentNode.insertBefore(tg, sec);
     document.body.classList.add('stu-sec-closed');
-    tg.onclick = function () { if (document.body.classList.toggle('stu-sec-closed') === false) cat = ''; paint(); };
-    pan.addEventListener('click', function (e) {
-      var k = e.target.closest('[data-c]'), it = e.target.closest('[data-i]');
-      if (k) { cat = k.getAttribute('data-c'); paint(); }
-      else if (it) { var b = btns()[+it.getAttribute('data-i')]; if (b) b.click(); document.body.classList.add('stu-sec-closed'); paint(); }
+    tg.onclick = function () { document.body.classList.toggle('stu-sec-closed'); paint(); };
+    sec.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.wk-sec-btn');
+      if (b && phone() && !/▾|▼/.test(b.textContent)) setTimeout(function () { document.body.classList.add('stu-sec-closed'); paint(); }, 50);   /* 下拉式的（字詞辨析 ▾）要等選完 */
     });
-    new MutationObserver(function () { setTimeout(paint, 0); }).observe(sec, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
+    new MutationObserver(paint).observe(sec, { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
     paint();
     return true;
   }
