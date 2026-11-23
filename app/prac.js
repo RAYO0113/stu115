@@ -164,10 +164,14 @@
     DD().bank.forEach(function (b) { var k = gKey(b); if (k && c[k] >= 2) GRP[b.id] = k; });
     return GRP;
   }
-  function readDraw(pool) {   /* 整組抽，一組不拆開、組內照原題序；湊到 10 題左右（最多 12，第一組再長也照出） */
+  /* 11/23 老師：「閱讀測驗不要一題一題抽，分題組去抽——每看一篇文章就應該回答 2～5 題」
+     → 快速刷題／練點速度／先不閱讀／就想閱讀都用 drawUnits：閱讀題組整組抽、不拆開、組內照原題序，單題各自一個單位。
+     每個單位（一題或一組）抽中機會相同＝每一題被抽到的機會相同，閱讀題占的比例跟以前一題一題抽時差不多。
+     湊到 N 題左右：最多 N＋2 題（第一個單位再長也照出）。修復舊傷只出錯過的題，不在此限。 */
+  function drawUnits(pool, N) {
     var g = {}, ord = [], list = [];
-    pool.forEach(function (b) { var k = grp()[b.id]; if (!g[k]) { g[k] = []; ord.push(k); } g[k].push(b); });
-    shuffle(ord).forEach(function (k) { if (list.length >= 10 || (list.length && list.length + g[k].length > 12)) return; list = list.concat(g[k]); });
+    pool.forEach(function (b) { var k = grp()[b.id] || 'q|' + b.id; if (!g[k]) { g[k] = []; ord.push(k); } g[k].push(b); });
+    shuffle(ord).forEach(function (k) { var u = g[k]; if (list.length >= N || (list.length && list.length + u.length > N + 2)) return; list = list.concat(u); });
     return list;
   }
   function qSetup(mode) {
@@ -180,11 +184,13 @@
     if (!qsel.d) qsel.d = { 易: 1, 中: 1, 難: 1 };
     var hasD = B.some(function (b) { return b.d; }) && mode !== 'read';   /* 就想閱讀：整組出，不用難易度篩（篩了會把一組拆開） */
     function pool() {
-      return B.filter(function (b) {
-        var r = !!grp()[b.id];
-        if (!qsel.les[b.les] || !qsel.src[b.src]) return false;
-        if (mode === 'read') return r;
-        return (!b.d || qsel.d[b.d]) && !(mode === 'noread' && r);
+      var base = B.filter(function (b) { return qsel.les[b.les] && qsel.src[b.src]; }), gOK = {};
+      base.forEach(function (b) { var k = grp()[b.id]; if (k && (!b.d || qsel.d[b.d])) gOK[k] = 1; });   /* 題組：組裡有一題符合難易度，整組都留（不拆組） */
+      return base.filter(function (b) {
+        var k = grp()[b.id];
+        if (mode === 'read') return !!k;
+        if (mode === 'noread' && k) return false;
+        return k ? !!gOK[k] : (!b.d || qsel.d[b.d]);
       });
     }
     function draw() {
@@ -196,14 +202,14 @@
         '<div class="dr-lab">範圍</div>' + chips('les', L.map(function (l) { return [l[0], l[1] + ' ' + l[0]]; }), qsel.les) +
         '<div class="dr-lab">題目來源</div>' + chips('src', R.map(function (s) { return [s[0], s[1]]; }), qsel.src) +
         (hasD ? '<div class="dr-lab">難易度</div>' + chips('d', DIFF, qsel.d) : '') +
-        '<p class="dr-mut">' + (Object.keys(qsel.les).length ? '' : '👆 先點上面要刷哪幾課。') + cnt + (mode === 'speed' ? '抽 ' + N + ' 題、限時 ' + mmss(sec) + '，可以前後翻、改答案，交卷才對答案；時間到自動交卷。' : mode === 'read' ? '一次抽幾組、約 10 題，同一組的題目接著出，每答一題馬上看對錯和解析。' : '抽 ' + N + ' 題，每答一題馬上看對錯和解析。') + '</p>',
+        '<p class="dr-mut">' + (Object.keys(qsel.les).length ? '' : '👆 先點上面要刷哪幾課。') + cnt + (mode === 'speed' ? '抽 ' + N + ' 題左右（閱讀題組整組出）、約 ' + mmss(sec) + '，可以前後翻、改答案，交卷才對答案；時間到自動交卷。' : mode === 'read' ? '一次抽幾組、約 10 題，同一組的題目接著出，每答一題馬上看對錯和解析。' : '抽 ' + N + ' 題' + (mode === 'noread' ? '' : '左右（閱讀題組整組出，不拆開）') + '，每答一題馬上看對錯和解析。') + '</p>',
         function (a) {
           var p = a.split('|');
           if (p[0] === 'les' || p[0] === 'src' || p[0] === 'd') { var m = qsel[p[0]]; if (m[p[1]]) delete m[p[1]]; else m[p[1]] = 1; draw(); }
           else if (a === 'go') {
-            var list = mode === 'read' ? readDraw(pool()) : shuffle(pool().slice()).slice(0, N);
+            var list = drawUnits(pool(), N);   /* 題組整組抽 */
             lastPool = pool;
-            if (mode === 'speed') speedStart(list, sec, Object.keys(qsel.les).join('、'));
+            if (mode === 'speed') speedStart(list, Math.round(SPEED_SEC * list.length / SPEED_N), Object.keys(qsel.les).join('、'));   /* 整組抽可能多 1～2 題，時間照實際題數算 */
             else quickStart(mode, list, Object.keys(qsel.les).join('、'));
           }
         },
@@ -279,7 +285,7 @@
       open(QT[mode], '<div class="dr-big">' + right + '<small> / ' + list.length + '</small></div><p class="dr-mut c">用時 ' + mmss((Date.now() - run.t0) / 1000) + '</p>' +
         (wrong.length ? '<div class="dr-lab">這次錯的（已記進修復舊傷）</div><ul class="dr-wl">' + wrong.map(function (it) { return '<li>' + esc(lno(it.les) + ' ' + it.sn + ' 第 ' + it.n + ' 題') + '：' + esc(plain(it.stem).slice(0, 36)) + '…</li>'; }).join('') + '</ul>' : '<p class="dr-mut c">全對！太強了 👏</p>'),
         function (a) {
-          if (a === 'again') { if (mode === 'fix') qFix(); else if (mode === 'noread' || mode === 'read') quickStart(mode, mode === 'read' ? readDraw(lastPool()) : shuffle(lastPool().slice()).slice(0, 10), les); else quickStart(mode, shuffle(myBank().filter(function (b) { return qsel.les[b.les] && qsel.src[b.src]; })).slice(0, 10), les); }
+          if (a === 'again') { if (mode === 'fix') qFix(); else quickStart(mode, drawUnits(lastPool(), 10), les); }
           else if (a === 'fix') qFix();
           else close();
         },
@@ -288,7 +294,7 @@
     show();
   }
   function qFix() {
-    var ids = openIds('q'), B = myBank(), list = shuffle(B.filter(function (b) { return ids.indexOf('q:' + b.id) >= 0; })).slice(0, 20);
+    var ids = openIds('q'), B = myBank(), list = drawUnits(B.filter(function (b) { return ids.indexOf('q:' + b.id) >= 0; }), 20);   /* 同一篇文章錯的幾題排在一起 */
     if (!list.length) { open('修復舊傷', '<div class="empty"><i class="ti ti-heart-check"></i>目前沒有舊傷，先去刷題吧！</div>', function () { close(); }, { foot: '<a class="dr-btn" data-a="home">回練習</a>' }); return; }
     quickStart('fix', list, '錯題');
   }
