@@ -80,6 +80,9 @@
       '<a class="pkb" data-pk="quick"><i class="ti ti-bolt"></i><b>快速刷題</b><span>零碎時間，10 題馬上對答案</span></a>' +
       '<a class="pkb" data-pk="speed"><i class="ti ti-stopwatch"></i><b>練點速度</b><span>仿 A 卷 ' + SPEED_N + ' 題 ' + (SPEED_SEC / 60) + ' 分鐘</span></a>' +
       '<a class="pkb" data-pk="fix"><i class="ti ti-bandage"></i><b>修復舊傷' + (nq ? '<em>' + nq + '</em>' : '') + '</b><span>' + (nq ? '錯過的 ' + nq + ' 題，連對 ' + PASS + ' 次就修好' : '目前沒有舊傷') + '</span></a></div>' +
+      '<div class="cd fade pk pk2">' +   /* 11/23 老師：先不閱讀／就想閱讀 */
+      '<a class="pkb" data-pk="noread"><i class="ti ti-book-off"></i><b>先不閱讀</b><span>拿掉閱讀題組，只刷單題</span></a>' +
+      '<a class="pkb" data-pk="read"><i class="ti ti-book-2"></i><b>就想閱讀</b><span>只寫閱讀題組，一組一組做</span></a></div>' +
       '<div class="sec"><h2>考注釋牲淚俱下</h2><span>課本注釋</span></div><div class="cd fade pk">' +
       '<a class="pkb" data-pk="nmem"><i class="ti ti-book"></i><b>背書模式</b><span>先背，點一下看解釋</span></a>' +
       '<a class="pkb" data-pk="nquiz"><i class="ti ti-pencil-question"></i><b>刷題模式</b><span>抽考，考完自動訂正</span></a>' +
@@ -95,7 +98,7 @@
       var b = e.target.closest('[data-pk]'); if (!b) return;
       var k = b.getAttribute('data-pk');
       need(function () {
-        if (k === 'quick' || k === 'speed') qSetup(k);
+        if (k === 'quick' || k === 'speed' || k === 'noread' || k === 'read') qSetup(k);
         else if (k === 'fix') qFix();
         else if (k === 'nmem' || k === 'nquiz') nSetup(k);
         else if (k === 'nbook') nBook();
@@ -148,31 +151,60 @@
   /* ════════ 刷個題牲龍活虎 ════════ */
   var qsel = { les: null, src: null, d: null };
   var DIFF = [['易', '易'], ['中', '中'], ['難', '難']];   /* 10/30 難易度：出版社標記＋Claude 補標 */
+  /* 11/23 老師：「先不閱讀」拿掉閱讀題組、「就想閱讀」只寫閱讀題組（兩個都跟快速刷題一樣，一題一題馬上對答案）。
+     閱讀題組＝同一課、同一來源、共用同一篇文章（psg）的 2 題以上；只附一段短文的單題、「題組圖文（同上一題）」不算。
+     後台只認得原本的模式，所以作答紀錄照「快速刷題」送。 */
+  var QT = { quick: '⚡ 快速刷題', speed: '⏱ 練點速度', fix: '修復舊傷', noread: '🙈 先不閱讀', read: '📖 就想閱讀' };
+  var GRP = null, lastPool = null;
+  function gKey(b) { return b.psg && !/^(\s*<img[^>]*>\s*)+$/.test(b.psg) ? b.les + '|' + b.id.split('|')[1] + '|' + b.psg : ''; }
+  function grp() {   /* { 題目id: 題組key }，只收 2 題以上的組 */
+    if (GRP) return GRP;
+    var c = {}; GRP = {};
+    DD().bank.forEach(function (b) { var k = gKey(b); if (k) c[k] = (c[k] || 0) + 1; });
+    DD().bank.forEach(function (b) { var k = gKey(b); if (k && c[k] >= 2) GRP[b.id] = k; });
+    return GRP;
+  }
+  function readDraw(pool) {   /* 整組抽，一組不拆開、組內照原題序；湊到 10 題左右（最多 12，第一組再長也照出） */
+    var g = {}, ord = [], list = [];
+    pool.forEach(function (b) { var k = grp()[b.id]; if (!g[k]) { g[k] = []; ord.push(k); } g[k].push(b); });
+    shuffle(ord).forEach(function (k) { if (list.length >= 10 || (list.length && list.length + g[k].length > 12)) return; list = list.concat(g[k]); });
+    return list;
+  }
   function qSetup(mode) {
     var B = myBank();
-    if (!B.length) { open(mode === 'speed' ? '⏱ 練點速度' : '⚡ 快速刷題', '<div class="empty"><i class="ti ti-lock"></i>老師還沒開放這班的題目</div>', function () {}); return; }
+    if (!B.length) { open(QT[mode], '<div class="empty"><i class="ti ti-lock"></i>老師還沒開放這班的題目</div>', function () {}); return; }
     var L = (DD().les || []).filter(function (l) { return B.some(function (b) { return b.les === l[0]; }); });
     var R = (DD().src || []).filter(function (s) { return B.some(function (b) { return b.src === s[0]; }); });
     if (!qsel.les) qsel.les = {};   /* 11/11 老師：範圍預設一課都不選，讓學生自己點（來源、難易度仍預設全選） */
     if (!qsel.src) { qsel.src = {}; R.forEach(function (s) { qsel.src[s[0]] = 1; }); }
     if (!qsel.d) qsel.d = { 易: 1, 中: 1, 難: 1 };
-    var hasD = B.some(function (b) { return b.d; });
-    function pool() { return B.filter(function (b) { return qsel.les[b.les] && qsel.src[b.src] && (!b.d || qsel.d[b.d]); }); }
+    var hasD = B.some(function (b) { return b.d; }) && mode !== 'read';   /* 就想閱讀：整組出，不用難易度篩（篩了會把一組拆開） */
+    function pool() {
+      return B.filter(function (b) {
+        var r = !!grp()[b.id];
+        if (!qsel.les[b.les] || !qsel.src[b.src]) return false;
+        if (mode === 'read') return r;
+        return (!b.d || qsel.d[b.d]) && !(mode === 'noread' && r);
+      });
+    }
     function draw() {
-      var n = pool().length, N = mode === 'speed' ? Math.min(SPEED_N, n) : Math.min(10, n);
+      var P = pool(), n = P.length, N = mode === 'speed' ? Math.min(SPEED_N, n) : Math.min(10, n);
       var sec = mode === 'speed' ? Math.round(SPEED_SEC * N / SPEED_N) : 0;
-      open(mode === 'speed' ? '⏱ 練點速度' : '⚡ 快速刷題',
+      var nG = mode === 'read' ? P.filter(function (b, i) { return !i || grp()[b.id] !== grp()[P[i - 1].id]; }).length : 0;
+      var cnt = mode === 'read' ? '目前範圍共 ' + nG + ' 組閱讀題組（' + n + ' 題）。' : '目前範圍共 ' + n + ' 題' + (mode === 'noread' ? '（已拿掉閱讀題組）' : '') + '。';
+      open(QT[mode],
         '<div class="dr-lab">範圍</div>' + chips('les', L.map(function (l) { return [l[0], l[1] + ' ' + l[0]]; }), qsel.les) +
         '<div class="dr-lab">題目來源</div>' + chips('src', R.map(function (s) { return [s[0], s[1]]; }), qsel.src) +
         (hasD ? '<div class="dr-lab">難易度</div>' + chips('d', DIFF, qsel.d) : '') +
-        '<p class="dr-mut">' + (Object.keys(qsel.les).length ? '' : '👆 先點上面要刷哪幾課。') + '目前範圍共 ' + n + ' 題。' + (mode === 'speed' ? '抽 ' + N + ' 題、限時 ' + mmss(sec) + '，可以前後翻、改答案，交卷才對答案；時間到自動交卷。' : '抽 ' + N + ' 題，每答一題馬上看對錯和解析。') + '</p>',
+        '<p class="dr-mut">' + (Object.keys(qsel.les).length ? '' : '👆 先點上面要刷哪幾課。') + cnt + (mode === 'speed' ? '抽 ' + N + ' 題、限時 ' + mmss(sec) + '，可以前後翻、改答案，交卷才對答案；時間到自動交卷。' : mode === 'read' ? '一次抽幾組、約 10 題，同一組的題目接著出，每答一題馬上看對錯和解析。' : '抽 ' + N + ' 題，每答一題馬上看對錯和解析。') + '</p>',
         function (a) {
           var p = a.split('|');
           if (p[0] === 'les' || p[0] === 'src' || p[0] === 'd') { var m = qsel[p[0]]; if (m[p[1]]) delete m[p[1]]; else m[p[1]] = 1; draw(); }
           else if (a === 'go') {
-            var list = shuffle(pool().slice()).slice(0, N);
+            var list = mode === 'read' ? readDraw(pool()) : shuffle(pool().slice()).slice(0, N);
+            lastPool = pool;
             if (mode === 'speed') speedStart(list, sec, Object.keys(qsel.les).join('、'));
-            else quickStart('quick', list, Object.keys(qsel.les).join('、'));
+            else quickStart(mode, list, Object.keys(qsel.les).join('、'));
           }
         },
         { foot: '<a class="dr-btn" data-a="go"' + (N ? '' : ' disabled') + '>' + (mode === 'speed' ? '開始計時' : '開始') + '</a>' });
@@ -214,10 +246,10 @@
     return ps && !nosplit ? mt + '<div class="dr-split">' + ps + '<div class="dr-qp">' + h + '</div></div>' : mt + h;   /* 10/30：閱讀題文章框、題目框各自滑動 */
   }
 
-  /* ⚡ 快速刷題／修復舊傷：一題一題，作答馬上對答案 */
+  /* ⚡ 快速刷題／修復舊傷／先不閱讀／就想閱讀：一題一題，作答馬上對答案 */
   function quickStart(mode, list, les) {
     var run = { i: 0, res: [], t0: Date.now(), pick: '', el: {} }, sent = 0;
-    function flushPart(done) { var r = run.res.slice(sent); sent = run.res.length; record(mode, les, (Date.now() - run.t0) / 1000, r, done); }
+    function flushPart(done) { var r = run.res.slice(sent); sent = run.res.length; record(mode === 'noread' || mode === 'read' ? 'quick' : mode, les, (Date.now() - run.t0) / 1000, r, done); }
     quitFn = function () { flushPart(false); };
     function show(keep) {
       var it = list[run.i], ans = run.pick, done = !!ans, ok = ans === it.ans, msg = '';
@@ -228,7 +260,7 @@
       var rs = done ? '<div class="dr-res ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '⭕ 答對了！' : '❌ 正確答案是 (' + esc(it.ans) + ')') + (msg ? '<small>' + msg + '</small>' : '') + '</div>' : '';
       var body = qBody(it, ans, done, run.el, run.i === 0);   /* 對錯放在選項下面、解析上面 */
       body = body.indexOf('<div class="dr-exp">') >= 0 ? body.replace('<div class="dr-exp">', rs + '<div class="dr-exp">') : /<\/div><\/div>$/.test(body) && body.indexOf('dr-split') >= 0 ? body.slice(0, -12) + rs + '</div></div>' : body + rs;
-      open(mode === 'fix' ? '修復舊傷' : '⚡ 快速刷題', body,
+      open(QT[mode], body,
         function (a, b) {
           var p = a.split('|');
           if (!run.pick && elTap(run.el, a, b)) { if (p[0] === 'el') show(true); return; }
@@ -244,14 +276,14 @@
       quitFn = null;
       flushPart(true);
       var right = run.res.filter(function (x) { return x.ok; }).length, wrong = list.filter(function (it, i) { return !run.res[i].ok; });
-      open(mode === 'fix' ? '修復舊傷' : '⚡ 快速刷題', '<div class="dr-big">' + right + '<small> / ' + list.length + '</small></div><p class="dr-mut c">用時 ' + mmss((Date.now() - run.t0) / 1000) + '</p>' +
+      open(QT[mode], '<div class="dr-big">' + right + '<small> / ' + list.length + '</small></div><p class="dr-mut c">用時 ' + mmss((Date.now() - run.t0) / 1000) + '</p>' +
         (wrong.length ? '<div class="dr-lab">這次錯的（已記進修復舊傷）</div><ul class="dr-wl">' + wrong.map(function (it) { return '<li>' + esc(lno(it.les) + ' ' + it.sn + ' 第 ' + it.n + ' 題') + '：' + esc(plain(it.stem).slice(0, 36)) + '…</li>'; }).join('') + '</ul>' : '<p class="dr-mut c">全對！太強了 👏</p>'),
         function (a) {
-          if (a === 'again') { if (mode === 'fix') qFix(); else quickStart(mode, shuffle(myBank().filter(function (b) { return qsel.les[b.les] && qsel.src[b.src]; })).slice(0, 10), les); }
+          if (a === 'again') { if (mode === 'fix') qFix(); else if (mode === 'noread' || mode === 'read') quickStart(mode, mode === 'read' ? readDraw(lastPool()) : shuffle(lastPool().slice()).slice(0, 10), les); else quickStart(mode, shuffle(myBank().filter(function (b) { return qsel.les[b.les] && qsel.src[b.src]; })).slice(0, 10), les); }
           else if (a === 'fix') qFix();
           else close();
         },
-        { foot: '<a class="dr-btn" data-a="again">' + (mode === 'fix' ? '繼續修' : '再刷 10 題') + '</a>' + (mode !== 'fix' && openIds('q').length ? '<a class="dr-btn ghost" data-a="fix">修復舊傷</a>' : '') + '<a class="dr-btn ghost" data-a="home">回練習</a>' });
+        { foot: '<a class="dr-btn" data-a="again">' + (mode === 'fix' ? '繼續修' : mode === 'read' ? '再來幾組' : '再刷 10 題') + '</a>' + (mode !== 'fix' && openIds('q').length ? '<a class="dr-btn ghost" data-a="fix">修復舊傷</a>' : '') + '<a class="dr-btn ghost" data-a="home">回練習</a>' });
     }
     show();
   }
